@@ -507,6 +507,219 @@
             }
         }
 
+        /* ========== 打印成绩单专用样式 ========== */
+        @media print {
+            /* body 加上 .print-report 时，只显示成绩报告 */
+            body.print-report .container > *:not(#reportPrintArea) {
+                display: none !important;
+            }
+
+            body.print-report #reportPrintArea {
+                display: block !important;
+            }
+
+            body.print-report .container {
+                box-shadow: none;
+                padding: 10px;
+            }
+        }
+
+        /* 屏幕下成绩报告打印区域隐藏 */
+        #reportPrintArea {
+            display: none;
+        }
+
+        /* ========== 配置面板（年级/难度/题型等）========== */
+        .config-panel {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+        }
+
+        .config-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 18px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .config-row:last-child { margin-bottom: 0; }
+
+        .config-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .config-label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .config-group select,
+        .config-group input[type="number"] {
+            padding: 5px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+            background: white;
+            transition: border-color 0.2s;
+        }
+
+        .config-group select:focus,
+        .config-group input[type="number"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .config-group input[type="number"] {
+            width: 60px;
+            text-align: center;
+        }
+
+        .config-group label.checkbox-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 12px;
+            color: #444;
+            cursor: pointer;
+            padding: 3px 8px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background: white;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .config-group label.checkbox-label:hover {
+            border-color: #4CAF50;
+        }
+
+        .config-group label.checkbox-label input[type="checkbox"] {
+            margin: 0;
+            cursor: pointer;
+            accent-color: #4CAF50;
+        }
+
+        .config-group label.checkbox-label:has(input:checked) {
+            background: #E8F5E9;
+            border-color: #4CAF50;
+            color: #2E7D32;
+        }
+
+        /* 计时器 */
+        .timer-bar {
+            display: none;
+            background: linear-gradient(135deg, #FF9800, #FFC107);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(255,152,0,0.3);
+        }
+
+        .timer-bar.show { display: block; }
+
+        .timer-bar.warning {
+            background: linear-gradient(135deg, #f44336, #FF5252);
+            animation: timerPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes timerPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .timer-time {
+            font-size: 24px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+
+        /* 成绩报告 - 题型分布 */
+        .result-type-stats {
+            margin-top: 10px;
+            display: grid;
+            grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+            gap: 8px;
+        }
+
+        .type-stat-item {
+            background: white;
+            padding: 8px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            text-align: center;
+        }
+
+        .type-stat-name {
+            font-size: 12px;
+            color: #666;
+            margin-bottom: 3px;
+        }
+
+        .type-stat-bar {
+            background: #eee;
+            height: 6px;
+            border-radius: 3px;
+            overflow: hidden;
+            margin: 4px 0;
+        }
+
+        .type-stat-bar-fill {
+            height: 100%;
+            background: #4CAF50;
+            transition: width 0.5s ease;
+        }
+
+        .type-stat-text {
+            font-size: 11px;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .result-extra-info {
+            display: flex;
+            justify-content: space-around;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin-top: 8px;
+            padding: 8px;
+            background: #E3F2FD;
+            border-radius: 6px;
+            font-size: 12px;
+            color: #1565C0;
+        }
+
+        .result-extra-info span {
+            text-align: center;
+        }
+
+        .result-extra-info strong {
+            font-size: 16px;
+            display: block;
+        }
+
+        /* 导出按钮组 */
+        .export-controls {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            justify-content: center;
+            margin-top: 10px;
+            padding-top: 10px;
+            border-top: 1px dashed #ccc;
+        }
+
         /* 响应式 */
         @media (max-width: 768px) {
             .questions-grid {
@@ -523,13 +736,96 @@
             }
 
             button { width: 100%; }
+
+            .config-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .config-group {
+                justify-content: flex-start;
+            }
         }
     </style>
 </head>
 <body>
     <div class="container">
-        <h1>📝 数学练习题</h1>
-        <p class="subtitle">共100道计算题 | 加减乘除混合运算</p>
+        <h1>📝 数学口算训练系统</h1>
+        <p class="subtitle" id="subtitle">共100道计算题 | 加减乘除混合运算</p>
+
+        <!-- 配置面板：年级 / 难度 / 题型 / 题量 / 计时 -->
+        <div class="config-panel" id="configPanel">
+            <div class="config-row">
+                <div class="config-group">
+                    <span class="config-label">🎓 年级：</span>
+                    <select id="gradeSelect" onchange="onGradeChange()">
+                        <option value="1">一年级</option>
+                        <option value="2">二年级</option>
+                        <option value="3">三年级</option>
+                        <option value="4">四年级</option>
+                        <option value="custom">通用/自定义</option>
+                    </select>
+                </div>
+
+                <div class="config-group" id="difficultyGroup">
+                    <span class="config-label">📊 难度：</span>
+                    <select id="difficultySelect" onchange="onDifficultyChange()"></select>
+                </div>
+
+                <div class="config-group">
+                    <span class="config-label">🔢 题量：</span>
+                    <select id="countSelect">
+                        <option value="20">20 道</option>
+                        <option value="50">50 道</option>
+                        <option value="100" selected>100 道</option>
+                        <option value="200">200 道</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="config-row">
+                <div class="config-group">
+                    <span class="config-label">➗ 题型：</span>
+                    <label class="checkbox-label"><input type="checkbox" class="type-cb" value="+" checked> 加法</label>
+                    <label class="checkbox-label"><input type="checkbox" class="type-cb" value="-" checked> 减法</label>
+                    <label class="checkbox-label"><input type="checkbox" class="type-cb" value="×" checked> 乘法</label>
+                    <label class="checkbox-label"><input type="checkbox" class="type-cb" value="÷" checked> 除法</label>
+                </div>
+
+                <div class="config-group" id="advancedGroup">
+                    <span class="config-label">🔥 进阶：</span>
+                    <label class="checkbox-label"><input type="checkbox" id="carryAdd"> 进位加法</label>
+                    <label class="checkbox-label"><input type="checkbox" id="borrowSub"> 退位减法</label>
+                </div>
+            </div>
+
+            <div class="config-row" id="customRangeRow" style="display:none;">
+                <div class="config-group">
+                    <span class="config-label">🎚️ 数值范围：</span>
+                    <input type="number" id="rangeMin" value="1" min="0">
+                    <span>～</span>
+                    <input type="number" id="rangeMax" value="99" min="1">
+                    <span style="font-size:11px;color:#999;">（参与运算的最大数）</span>
+                </div>
+            </div>
+
+            <div class="config-row">
+                <div class="config-group">
+                    <span class="config-label">⏱️ 计时模式：</span>
+                    <label class="checkbox-label"><input type="checkbox" id="timerEnable" onchange="onTimerToggle()"> 开启倒计时</label>
+                    <select id="timerMinutes" style="display:none;">
+                        <option value="5">5 分钟</option>
+                        <option value="10" selected>10 分钟</option>
+                        <option value="15">15 分钟</option>
+                    </select>
+                </div>
+            </div>
+        </div>
+
+        <!-- 倒计时显示 -->
+        <div class="timer-bar" id="timerBar">
+            ⏱️ 剩余时间：<span class="timer-time" id="timerTime">10:00</span>
+        </div>
 
         <!-- 阶段指示器 -->
         <div class="stage-indicator">
@@ -546,6 +842,8 @@
             <button class="btn-secondary" id="btnSubmitCorrection" onclick="submitCorrection()" style="display:none;">✅ 提交订正</button>
             <button class="btn-danger" id="btnClear" onclick="clearAnswers()">🗑️ 清空</button>
             <button class="btn-history" onclick="showHistory()">📚 历史</button>
+            <button class="btn-secondary" onclick="exportQuestions()">📤 导出题目</button>
+            <button class="btn-secondary" onclick="exportResults()">📋 导出成绩</button>
             <button class="btn-secondary" onclick="window.print()">🖨️ 打印</button>
         </div>
 
@@ -590,12 +888,19 @@
         <div class="questions-grid" id="questionsGrid"></div>
     </div>
 
+    <!-- 成绩报告打印专用区域（仅打印时显示） -->
+    <div id="reportPrintArea"></div>
+
     <!-- 历史记录模态框 -->
     <div class="modal" id="historyModal">
         <div class="modal-content">
             <div class="modal-header">
                 <h2>📚 历史记录</h2>
-                <button class="modal-close" onclick="closeHistory()">&times;</button>
+                <div style="display:flex; gap:8px; align-items:center;">
+                    <button class="btn-secondary" style="padding:4px 12px; font-size:12px;" onclick="exportHistoryCSV()">📤 导出CSV</button>
+                    <button class="btn-secondary" style="padding:4px 12px; font-size:12px;" onclick="exportHistoryJSON()">💾 导出JSON</button>
+                    <button class="modal-close" onclick="closeHistory()">&times;</button>
+                </div>
             </div>
             <div id="historyList"></div>
         </div>
@@ -608,47 +913,183 @@
         let wrongQuestions = [];
         let currentStage = 'practice';
         let practiceStartTime = null;
+        let practiceEndTime = null;
         let correctionRound = 0;
+        let timerInterval = null;        // 倒计时定时器
+        let timerTotalSeconds = 0;       // 倒计时总秒数
+        let timerRemainingSeconds = 0;   // 倒计时剩余秒数
+
+        // 年级 / 难度配置表：每个年级有多个难度，每个难度定义题型范围与生成参数
+        // 参数说明：minA/maxA——第一个数范围；minB/maxB——第二个数范围；maxResult——结果上限；ops——该难度默认启用的运算
+        const GRADE_CONFIG = {
+            '1': {
+                name: '一年级',
+                levels: [
+                    { id: 'g1_1', name: '10以内加减', minA: 1, maxA: 9, minB: 1, maxB: 9, maxResult: 10, ops: ['+', '-'] },
+                    { id: 'g1_2', name: '20以内加减', minA: 1, maxA: 19, minB: 1, maxB: 19, maxResult: 20, ops: ['+', '-'] }
+                ]
+            },
+            '2': {
+                name: '二年级',
+                levels: [
+                    { id: 'g2_1', name: '100以内加减', minA: 10, maxA: 99, minB: 1, maxB: 99, maxResult: 100, ops: ['+', '-'] },
+                    { id: 'g2_2', name: '乘法口诀(九九表)', minA: 1, maxA: 9, minB: 1, maxB: 9, maxResult: 81, ops: ['×'] },
+                    { id: 'g2_3', name: '加减乘混合', minA: 1, maxA: 99, minB: 1, maxB: 9, maxResult: 100, ops: ['+', '-', '×'] }
+                ]
+            },
+            '3': {
+                name: '三年级',
+                levels: [
+                    { id: 'g3_1', name: '三位数加减', minA: 100, maxA: 899, minB: 100, maxB: 899, maxResult: 999, ops: ['+', '-'] },
+                    { id: 'g3_2', name: '两位数乘一位数', minA: 10, maxA: 99, minB: 2, maxB: 9, maxResult: 998, ops: ['×'] },
+                    { id: 'g3_3', name: '除法(整除)', minA: 10, maxA: 999, minB: 2, maxB: 9, maxResult: 999, ops: ['÷'] }
+                ]
+            },
+            '4': {
+                name: '四年级',
+                levels: [
+                    { id: 'g4_1', name: '大数加减', minA: 1000, maxA: 9999, minB: 100, maxB: 9999, maxResult: 99999, ops: ['+', '-'] },
+                    { id: 'g4_2', name: '两位数乘法', minA: 11, maxA: 99, minB: 11, maxB: 99, maxResult: 9801, ops: ['×'] },
+                    { id: 'g4_3', name: '除法(商为两位数)', minA: 100, maxA: 9999, minB: 2, maxB: 99, maxResult: 9999, ops: ['÷'] }
+                ]
+            },
+            'custom': {
+                name: '通用/自定义',
+                levels: [
+                    { id: 'c1', name: '自定义范围', minA: 1, maxA: 99, minB: 1, maxB: 99, maxResult: 9999, ops: ['+', '-', '×', '÷'] }
+                ]
+            }
+        };
+
+        // 初始化年级下拉联动
+        function onGradeChange() {
+            const grade = document.getElementById('gradeSelect').value;
+            const diffSel = document.getElementById('difficultySelect');
+            const cfg = GRADE_CONFIG[grade];
+            diffSel.innerHTML = cfg.levels.map(l => `<option value="${l.id}">${l.name}</option>`).join('');
+
+            // 自定义模式显示数值范围输入
+            document.getElementById('customRangeRow').style.display = (grade === 'custom') ? 'flex' : 'none';
+
+            // 自动联动题型勾选（仅作为便利默认，用户仍可手动改）
+            const level = cfg.levels[0];
+            document.querySelectorAll('.type-cb').forEach(cb => {
+                cb.checked = level.ops.includes(cb.value);
+            });
+
+            onDifficultyChange();
+        }
+
+        function onDifficultyChange() {
+            const level = getCurrentLevelConfig();
+            if (!level) return;
+            // 切换难度时按该难度默认题型勾选（用户可再手动覆盖）
+            document.querySelectorAll('.type-cb').forEach(cb => {
+                cb.checked = level.ops.includes(cb.value);
+            });
+        }
+
+        // 获取当前选中的难度配置
+        function getCurrentLevelConfig() {
+            const grade = document.getElementById('gradeSelect').value;
+            const levelId = document.getElementById('difficultySelect').value;
+            const cfg = GRADE_CONFIG[grade];
+            return cfg.levels.find(l => l.id === levelId) || cfg.levels[0];
+        }
+
+        // 倒计时开关
+        function onTimerToggle() {
+            const enabled = document.getElementById('timerEnable').checked;
+            document.getElementById('timerMinutes').style.display = enabled ? 'inline-block' : 'none';
+        }
 
         function randomInt(min, max) {
+            if (min > max) [min, max] = [max, min];
             return Math.floor(Math.random() * (max - min + 1)) + min;
         }
 
-        function generateAddition() {
-            let a, b, result;
-            do {
-                a = randomInt(100, 899);
-                b = randomInt(100, 999 - a);
-                result = a + b;
-            } while (result >= 1000);
-            return { a, b, operator: '+', result };
-        }
+        // 根据当前配置生成单道题
+        // 支持进位加法 / 退位减法约束
+        function generateSingleQuestion(level, selectedOps, requireCarry, requireBorrow) {
+            const ops = selectedOps.length > 0 ? selectedOps : ['+'];
+            const op = ops[Math.floor(Math.random() * ops.length)];
 
-        function generateSubtraction() {
-            let a = randomInt(200, 999);
-            let b = randomInt(100, a - 1);
-            return { a, b, operator: '-', result: a - b };
-        }
-
-        function generateMultiplication() {
-            let a, b, result;
-            do {
-                a = randomInt(100, 999);
-                b = randomInt(2, 9);
-                result = a * b;
-            } while (result >= 1000);
-            return { a, b, operator: '×', result };
-        }
-
-        function generateDivision() {
-            let b = randomInt(2, 9);
-            let result = randomInt(11, 499);
-            let a = result * b;
-            while (a < 10 || a > 999) {
-                result = randomInt(11, 499);
-                a = result * b;
+            // 自定义模式使用用户输入范围
+            let minA = level.minA, maxA = level.maxA;
+            let minB = level.minB, maxB = level.maxB;
+            let maxResult = level.maxResult;
+            if (document.getElementById('gradeSelect').value === 'custom') {
+                const umin = parseInt(document.getElementById('rangeMin').value) || 0;
+                const umax = parseInt(document.getElementById('rangeMax').value) || 99;
+                minA = umin; maxA = umax;
+                minB = umin; maxB = umax;
+                maxResult = umax * umax; // 自定义不限制结果上限
             }
-            return { a, b, operator: '÷', result };
+
+            let a, b, result;
+            let attempts = 0;
+
+            do {
+                if (op === '+') {
+                    a = randomInt(minA, Math.min(maxA, maxResult - minB));
+                    b = randomInt(minB, Math.min(maxB, Math.max(1, maxResult - a)));
+                    result = a + b;
+                } else if (op === '-') {
+                    a = randomInt(minA, maxA);
+                    b = randomInt(minB, Math.min(maxB, a < minB ? minB : a));
+                    if (b > a) [a, b] = [b, a]; // 保证结果非负
+                    result = a - b;
+                } else if (op === '×') {
+                    a = randomInt(minA, maxA);
+                    b = randomInt(minB, maxB);
+                    result = a * b;
+                } else if (op === '÷') {
+                    // 整除：先生成商和除数，反推被除数
+                    b = randomInt(Math.max(2, minB), maxB);
+                    let quotient = randomInt(1, Math.max(1, Math.floor(maxResult / b)));
+                    a = quotient * b;
+                    result = quotient;
+                }
+                attempts++;
+                if (attempts > 50) break; // 避免极端范围死循环
+
+                // 进位加法校验：至少有一位相加进位
+                if (op === '+' && requireCarry && !hasCarryAdd(a, b)) continue;
+                // 退位减法校验：至少有一位需要借位
+                if (op === '-' && requireBorrow && !hasBorrowSub(a, b)) continue;
+
+                break;
+            } while (true);
+
+            return { a, b, operator: op, result };
+        }
+
+        // 判断加法是否存在进位
+        function hasCarryAdd(a, b) {
+            let carry = 0;
+            while (a > 0 || b > 0) {
+                const da = a % 10, db = b % 10;
+                if (da + db + carry >= 10) return true;
+                carry = Math.floor((da + db + carry) / 10);
+                a = Math.floor(a / 10);
+                b = Math.floor(b / 10);
+            }
+            return false;
+        }
+
+        // 判断减法是否存在退位
+        function hasBorrowSub(a, b) {
+            // 保证 a >= b
+            if (a < b) [a, b] = [b, a];
+            let borrow = 0;
+            while (a > 0 || b > 0) {
+                const da = a % 10, db = b % 10;
+                if (da - borrow < db) return true;
+                borrow = 0;
+                a = Math.floor(a / 10);
+                b = Math.floor(b / 10);
+            }
+            return false;
         }
 
         function shuffleArray(array) {
@@ -660,16 +1101,35 @@
             return newArray;
         }
 
+        // 获取用户当前勾选的题型
+        function getSelectedOps() {
+            return Array.from(document.querySelectorAll('.type-cb:checked')).map(cb => cb.value);
+        }
+
         function generateQuestions() {
+            const level = getCurrentLevelConfig();
+            const count = parseInt(document.getElementById('countSelect').value) || 100;
+            const ops = getSelectedOps();
+            const requireCarry = document.getElementById('carryAdd').checked;
+            const requireBorrow = document.getElementById('borrowSub').checked;
+
+            // 若勾选了进位/退位但没勾对应题型，自动补上
+            const effectiveOps = [...ops];
+            if (requireCarry && !effectiveOps.includes('+')) effectiveOps.push('+');
+            if (requireBorrow && !effectiveOps.includes('-')) effectiveOps.push('-');
+
             questions = [];
-            for (let i = 0; i < 25; i++) {
-                questions.push(generateAddition());
-                questions.push(generateSubtraction());
-                questions.push(generateMultiplication());
-                questions.push(generateDivision());
+            for (let i = 0; i < count; i++) {
+                questions.push(generateSingleQuestion(level, effectiveOps, requireCarry, requireBorrow));
             }
             questions = shuffleArray(questions);
-            userAnswers = new Array(100).fill(null);
+            userAnswers = new Array(count).fill(null);
+
+            // 更新副标题
+            const opNames = { '+': '加', '-': '减', '×': '乘', '÷': '除' };
+            const opText = ops.length === 0 ? '无题型' : ops.map(o => opNames[o]).join('');
+            document.getElementById('subtitle').textContent =
+                `${GRADE_CONFIG[document.getElementById('gradeSelect').value].name} · ${level.name} | 共${count}道题 | ${opText}法${ops.length > 1 ? '混合' : ''}运算`;
         }
 
         function renderQuestions() {
@@ -705,7 +1165,7 @@
                 event.preventDefault();
                 saveAnswer(currentIndex);
                 const nextIndex = currentIndex + 1;
-                if (nextIndex < 100) {
+                if (nextIndex < questions.length) {
                     document.getElementById(`answer-${nextIndex}`)?.focus();
                 } else {
                     submitAnswers();
@@ -714,13 +1174,79 @@
         }
 
         function startNewPractice() {
+            // 校验：至少选择一种题型
+            if (getSelectedOps().length === 0) {
+                alert('请至少选择一种题型（加/减/乘/除）');
+                return;
+            }
+            stopTimer();
             generateQuestions();
             renderQuestions();
             resetUI();
             practiceStartTime = new Date();
+            practiceEndTime = null;
             currentStage = 'practice';
             correctionRound = 0;
             updateStageIndicator();
+            // 若开启计时，启动倒计时
+            if (document.getElementById('timerEnable').checked) {
+                startTimer();
+            }
+        }
+
+        // ========== 倒计时相关 ==========
+        function startTimer() {
+            const minutes = parseInt(document.getElementById('timerMinutes').value) || 10;
+            timerTotalSeconds = minutes * 60;
+            timerRemainingSeconds = timerTotalSeconds;
+            updateTimerDisplay();
+            document.getElementById('timerBar').classList.add('show');
+            document.getElementById('timerBar').classList.remove('warning');
+
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timerRemainingSeconds--;
+                if (timerRemainingSeconds <= 0) {
+                    timerRemainingSeconds = 0;
+                    updateTimerDisplay();
+                    stopTimer();
+                    // 时间到自动提交
+                    if (currentStage === 'practice') {
+                        alert('⏱️ 时间到！自动提交批改。');
+                        submitAnswers();
+                    }
+                    return;
+                }
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            document.getElementById('timerBar').classList.remove('show', 'warning');
+        }
+
+        function updateTimerDisplay() {
+            const m = Math.floor(timerRemainingSeconds / 60);
+            const s = timerRemainingSeconds % 60;
+            document.getElementById('timerTime').textContent =
+                `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            // 最后 60 秒变红警示
+            const bar = document.getElementById('timerBar');
+            if (timerRemainingSeconds <= 60) {
+                bar.classList.add('warning');
+            } else {
+                bar.classList.remove('warning');
+            }
+        }
+
+        // 获取已用时长（秒）
+        function getElapsedSeconds() {
+            const end = practiceEndTime || new Date();
+            return Math.max(1, Math.round((end - practiceStartTime) / 1000));
         }
 
         function resetUI() {
@@ -763,10 +1289,17 @@
             let unansweredCount = 0;
             wrongQuestions = [];
 
+            // 题型正确率统计
+            const typeStats = {}; // { '+': {total, correct}, ... }
+
             questions.forEach((q, index) => {
                 const item = document.getElementById(`question-${index}`);
                 const input = document.getElementById(`answer-${index}`);
                 const userAnswer = userAnswers[index];
+
+                // 初始化题型统计
+                if (!typeStats[q.operator]) typeStats[q.operator] = { total: 0, correct: 0 };
+                typeStats[q.operator].total++;
 
                 item.classList.remove('correct', 'wrong');
 
@@ -786,6 +1319,7 @@
                     correctCount++;
                     item.classList.add('correct');
                     input.disabled = true;
+                    typeStats[q.operator].correct++;
                 } else {
                     wrongCount++;
                     item.classList.add('wrong');
@@ -802,16 +1336,39 @@
 
             currentStage = 'review';
             updateStageIndicator();
+            stopTimer();
+            practiceEndTime = new Date();
 
-            const score = correctCount;
+            const total = questions.length;
+            const accuracy = total > 0 ? Math.round(correctCount / total * 100) : 0;
+            // 得分按百分制（兼容历史显示）
+            const score = accuracy;
+
             document.getElementById('correctCount').textContent = correctCount;
             document.getElementById('wrongCount').textContent = wrongCount;
             document.getElementById('unansweredCount').textContent = unansweredCount;
             document.getElementById('scoreText').textContent = score;
 
-            const timeSpent = Math.round((new Date() - practiceStartTime) / 1000 / 60);
+            const elapsedSeconds = getElapsedSeconds();
+            const timeSpent = Math.max(1, Math.round(elapsedSeconds / 60));
+            const perMinute = (total / (elapsedSeconds / 60)).toFixed(1);
+
             let detailHTML = `<h3>📋 答题统计</h3>
-                <p>用时：约 ${timeSpent} 分钟 | 正确率：${score}% | 错题：${wrongCount} 道</p>`;
+                <p>用时：约 ${formatDuration(elapsedSeconds)} | 正确率：${accuracy}% | 错题：${wrongCount} 道 | 速度：${perMinute} 题/分钟</p>`;
+
+            // 题型分布
+            const opNames = { '+': '加法', '-': '减法', '×': '乘法', '÷': '除法' };
+            const opColors = { '+': '#4CAF50', '-': '#2196F3', '×': '#FF9800', '÷': '#9C27B0' };
+            const typeKeys = Object.keys(typeStats);
+            if (typeKeys.length > 0) {
+                detailHTML += `<div class="result-extra-info">`;
+                typeKeys.forEach(op => {
+                    const s = typeStats[op];
+                    const acc = s.total > 0 ? Math.round(s.correct / s.total * 100) : 0;
+                    detailHTML += `<span>${opNames[op]}正确率<br><strong style="color:${opColors[op]}">${acc}%</strong><br><small>(${s.correct}/${s.total})</small></span>`;
+                });
+                detailHTML += `</div>`;
+            }
 
             if (wrongQuestions.length > 0) {
                 detailHTML += `<p style="color:#f44336;">⚠️ 有 ${wrongQuestions.length} 道题需要订正</p>`;
@@ -822,7 +1379,7 @@
             document.getElementById('resultDetail').innerHTML = detailHTML;
             document.getElementById('resultPanel').classList.add('show');
 
-            saveToHistory(correctCount, wrongCount, unansweredCount, timeSpent);
+            saveToHistory(correctCount, wrongCount, unansweredCount, timeSpent, accuracy, typeStats, elapsedSeconds);
 
             document.getElementById('btnSubmit').disabled = true;
             if (wrongQuestions.length > 0) {
@@ -830,6 +1387,13 @@
             }
 
             window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        // 格式化时长（秒 -> X分Y秒）
+        function formatDuration(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return m > 0 ? `${m}分${s}秒` : `${s}秒`;
         }
 
         function startCorrection() {
@@ -957,20 +1521,30 @@
                     item.classList.remove('correct', 'wrong');
                 }
             });
-            userAnswers = new Array(100).fill(null);
+            userAnswers = new Array(questions.length).fill(null);
         }
 
-        function saveToHistory(correct, wrong, unanswered, timeSpent) {
+        function saveToHistory(correct, wrong, unanswered, timeSpent, accuracy, typeStats, elapsedSeconds) {
             const history = JSON.parse(localStorage.getItem('mathPracticeHistory') || '[]');
+
+            const total = questions.length;
+            const perMinute = elapsedSeconds > 0 ? (total / (elapsedSeconds / 60)).toFixed(1) : '0';
 
             const record = {
                 id: Date.now(),
                 date: new Date().toLocaleString('zh-CN'),
+                grade: GRADE_CONFIG[document.getElementById('gradeSelect').value].name,
+                level: getCurrentLevelConfig().name,
+                total,
                 correct,
                 wrong,
                 unanswered,
-                score: correct,
+                score: accuracy,          // 兼容字段：现在存的是正确率百分制
+                correctRate: accuracy,    // 新字段：正确率
                 timeSpent,
+                elapsedSeconds,
+                perMinute,
+                typeStats: typeStats || {},
                 wrongQuestions: wrongQuestions.map(wq => ({
                     question: `${wq.question.a} ${wq.question.operator} ${wq.question.b}`,
                     userAnswer: wq.userAnswer,
@@ -1005,15 +1579,16 @@
                 listEl.innerHTML = history.map(record => `
                     <div class="history-item">
                         <div class="history-header">
-                            <span class="history-date">${record.date}</span>
-                            <span class="history-score" style="color: ${record.score >= 90 ? '#4CAF50' : record.score >= 60 ? '#FF9800' : '#f44336'}">
-                                ${record.score}分
+                            <span class="history-date">${record.date}${record.grade ? ' · ' + record.grade : ''}</span>
+                            <span class="history-score" style="color: ${(record.correctRate != null ? record.correctRate : record.score) >= 90 ? '#4CAF50' : (record.correctRate != null ? record.correctRate : record.score) >= 60 ? '#FF9800' : '#f44336'}">
+                                ${record.correctRate != null ? record.correctRate : record.score}%
                             </span>
                         </div>
                         <div class="history-stats">
-                            <span>✅${record.correct}</span>
+                            <span>✅${record.correct}${record.total ? '/' + record.total : ''}</span>
                             <span>❌${record.wrong}</span>
                             <span>⏱️${record.timeSpent}分钟</span>
+                            ${record.perMinute ? `<span>⚡${record.perMinute}题/分</span>` : ''}
                             ${record.fullyCorrected ?
                                 (record.correctionRounds > 0 ?
                                     `<span style="color:#4CAF50;">📝已订正(${record.correctionRounds}轮)</span>` :
@@ -1046,7 +1621,240 @@
             if (e.target === this) closeHistory();
         });
 
+        // ========== 导出功能 ==========
+
+        // 导出题目：打开新窗口，A4 排版后调用打印（用户可保存为 PDF）
+        function exportQuestions() {
+            if (!questions || questions.length === 0) {
+                alert('请先生成题目（点击"新练习"）。');
+                return;
+            }
+            const grade = GRADE_CONFIG[document.getElementById('gradeSelect').value].name;
+            const level = getCurrentLevelConfig().name;
+            const count = questions.length;
+            const now = new Date().toLocaleString('zh-CN');
+
+            // 题目分列排版（每行5题，A4友好）
+            const cols = 5;
+            let rowsHtml = '';
+            for (let i = 0; i < questions.length; i += cols) {
+                const cells = [];
+                for (let j = 0; j < cols && i + j < questions.length; j++) {
+                    const q = questions[i + j];
+                    const num = i + j + 1;
+                    cells.push(`
+                        <td>
+                            <div class="qnum">${num}.</div>
+                            <div class="qexpr">${q.a} ${q.operator} ${q.b} = <span class="qblank">&nbsp;&nbsp;&nbsp;&nbsp;</span></div>
+                        </td>`);
+                }
+                rowsHtml += `<tr>${cells.join('')}</tr>`;
+            }
+
+            const html = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+                <title>数学口算题 - ${grade} ${level}</title>
+                <style>
+                    body { font-family: 'Microsoft YaHei', sans-serif; padding: 15px; color:#222; }
+                    h1 { text-align:center; font-size:18px; margin:0 0 4px; }
+                    .info { text-align:center; font-size:12px; color:#666; margin-bottom:12px; }
+                    table { width:100%; border-collapse:collapse; }
+                    td { border:1px solid #999; padding:8px 6px; width:20%; vertical-align:middle; }
+                    .qnum { font-size:10px; color:#888; }
+                    .qexpr { font-size:14px; }
+                    .qblank { display:inline-block; border-bottom:1px solid #333; min-width:38px; }
+                    .footer { margin-top:15px; font-size:11px; color:#888; display:flex; justify-content:space-between; }
+                    @page { size:A4; margin:10mm; }
+                </style></head><body>
+                <h1>📝 数学口算练习题</h1>
+                <div class="info">${grade} · ${level} | 共 ${count} 题 | 生成时间：${now}</div>
+                <table>${rowsHtml}</table>
+                <div class="footer">
+                    <span>姓名：______________</span>
+                    <span>用时：______ 分 ______ 秒</span>
+                    <span>成绩：______ / ${count}</span>
+                </div>
+                <script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script>
+                </body></html>`;
+
+            const w = window.open('', '_blank');
+            if (!w) {
+                alert('弹出窗口被浏览器拦截，请允许弹出窗口后重试。');
+                return;
+            }
+            w.document.open();
+            w.document.write(html);
+            w.document.close();
+        }
+
+        // 导出当前成绩为可打印成绩单
+        function exportResults() {
+            if (currentStage === 'practice' || !practiceEndTime) {
+                alert('请先提交批改后再导出成绩。');
+                return;
+            }
+            const grade = GRADE_CONFIG[document.getElementById('gradeSelect').value].name;
+            const level = getCurrentLevelConfig().name;
+            const total = questions.length;
+            const correct = parseInt(document.getElementById('correctCount').textContent);
+            const wrong = parseInt(document.getElementById('wrongCount').textContent);
+            const unanswered = parseInt(document.getElementById('unansweredCount').textContent);
+            const accuracy = parseInt(document.getElementById('scoreText').textContent);
+            const elapsedSeconds = getElapsedSeconds();
+            const perMinute = (total / (elapsedSeconds / 60)).toFixed(1);
+
+            // 统计题型正确率
+            const opNames = { '+': '加法', '-': '减法', '×': '乘法', '÷': '除法' };
+            const typeAgg = {};
+            questions.forEach((q, i) => {
+                if (!typeAgg[q.operator]) typeAgg[q.operator] = { total: 0, correct: 0 };
+                typeAgg[q.operator].total++;
+                if (userAnswers[i] === q.result) typeAgg[q.operator].correct++;
+            });
+            let typeRows = '';
+            Object.keys(typeAgg).forEach(op => {
+                const s = typeAgg[op];
+                const acc = s.total > 0 ? Math.round(s.correct / s.total * 100) : 0;
+                typeRows += `<tr><td>${opNames[op]}</td><td>${s.total}</td><td>${s.correct}</td><td>${s.total - s.correct}</td><td><b>${acc}%</b></td></tr>`;
+            });
+
+            // 错题列表
+            let wrongRows = '';
+            wrongQuestions.forEach(wq => {
+                wrongRows += `<tr><td>${wq.question.a} ${wq.question.operator} ${wq.question.b}</td><td><s>${wq.userAnswer}</s></td><td><b style="color:#4CAF50;">${wq.correctAnswer}</b></td></tr>`;
+            });
+
+            const now = new Date().toLocaleString('zh-CN');
+            const html = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+                <title>成绩报告 - ${accuracy}%</title>
+                <style>
+                    body { font-family:'Microsoft YaHei',sans-serif; padding:20px; color:#222; }
+                    h1 { text-align:center; color:#4CAF50; margin:0 0 4px; }
+                    .info { text-align:center; font-size:12px; color:#666; margin-bottom:15px; }
+                    .score-box { text-align:center; background:#E8F5E9; border:2px solid #4CAF50; border-radius:8px; padding:15px; margin-bottom:15px; }
+                    .score-big { font-size:42px; font-weight:bold; color:#4CAF50; }
+                    .summary { display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin-bottom:15px; }
+                    .summary div { background:#f5f5f5; border-radius:6px; padding:10px; text-align:center; }
+                    .summary b { font-size:20px; display:block; }
+                    .summary small { color:#666; }
+                    table { width:100%; border-collapse:collapse; margin-bottom:15px; font-size:13px; }
+                    th,td { border:1px solid #ccc; padding:6px 8px; text-align:center; }
+                    th { background:#4CAF50; color:white; }
+                    h2 { font-size:15px; color:#333; border-left:4px solid #4CAF50; padding-left:8px; margin:15px 0 8px; }
+                    .footer { margin-top:15px; font-size:11px; color:#888; text-align:center; border-top:1px dashed #ccc; padding-top:8px; }
+                    @page { size:A4; margin:12mm; }
+                </style></head><body>
+                <h1>📊 数学口算成绩报告</h1>
+                <div class="info">${grade} · ${level} | 报告生成：${now}</div>
+                <div class="score-box">
+                    <div>正确率</div>
+                    <div class="score-big">${accuracy}%</div>
+                </div>
+                <div class="summary">
+                    <div><b>${correct}</b><small>正确</small></div>
+                    <div><b style="color:#f44336;">${wrong}</b><small>错误</small></div>
+                    <div><b style="color:#FF9800;">${unanswered}</b><small>未答</small></div>
+                    <div><b style="color:#2196F3;">${perMinute}</b><small>题/分钟</small></div>
+                </div>
+                <div style="text-align:center;color:#666;font-size:13px;margin-bottom:10px;">总用时：${formatDuration(elapsedSeconds)} | 共 ${total} 题</div>
+                <h2>题型正确率分布</h2>
+                <table>
+                    <tr><th>题型</th><th>题数</th><th>正确</th><th>错误</th><th>正确率</th></tr>
+                    ${typeRows}
+                </table>
+                ${wrongRows ? `<h2>错题订正清单</h2><table>
+                    <tr><th>题目</th><th>我的答案</th><th>正确答案</th></tr>
+                    ${wrongRows}
+                </table>` : '<p style="text-align:center;color:#4CAF50;font-weight:bold;">🎉 全部正确，无错题！</p>'}
+                <div class="footer">— 数学口算训练系统 · 由 edu-tools-kit 生成 —</div>
+                <script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script>
+                </body></html>`;
+
+            const w = window.open('', '_blank');
+            if (!w) {
+                alert('弹出窗口被浏览器拦截，请允许弹出窗口后重试。');
+                return;
+            }
+            w.document.open();
+            w.document.write(html);
+            w.document.close();
+        }
+
+        // 把数组转为 CSV 字符串（处理逗号/换行/引号）
+        function toCSVRow(arr) {
+            return arr.map(v => {
+                if (v == null) v = '';
+                v = String(v);
+                if (v.indexOf(',') >= 0 || v.indexOf('"') >= 0 || v.indexOf('\n') >= 0) {
+                    return '"' + v.replace(/"/g, '""') + '"';
+                }
+                return v;
+            }).join(',');
+        }
+
+        // 导出历史为 CSV
+        function exportHistoryCSV() {
+            const history = JSON.parse(localStorage.getItem('mathPracticeHistory') || '[]');
+            if (history.length === 0) {
+                alert('暂无历史记录可导出。');
+                return;
+            }
+            const opNames = { '+': '加法', '-': '减法', '×': '乘法', '÷': '除法' };
+            const header = ['日期', '年级', '难度', '总题数', '正确', '错误', '未答', '正确率(%)', '用时(分)', '题/分钟', '是否全对', '订正轮数'];
+            const rows = [toCSVRow(header)];
+            history.forEach(r => {
+                rows.push(toCSVRow([
+                    r.date,
+                    r.grade || '-',
+                    r.level || '-',
+                    r.total || '-',
+                    r.correct,
+                    r.wrong,
+                    r.unanswered,
+                    r.correctRate != null ? r.correctRate : r.score,
+                    r.timeSpent,
+                    r.perMinute || '-',
+                    r.fullyCorrected ? '是' : '否',
+                    r.correctionRounds || 0
+                ]));
+            });
+            // 加 BOM 让 Excel 正确识别 UTF-8
+            const csv = '﻿' + rows.join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+            downloadBlob(blob, `数学成绩_${formatDateForFile()}.csv`);
+        }
+
+        // 导出历史为 JSON
+        function exportHistoryJSON() {
+            const history = JSON.parse(localStorage.getItem('mathPracticeHistory') || '[]');
+            if (history.length === 0) {
+                alert('暂无历史记录可导出。');
+                return;
+            }
+            const blob = new Blob([JSON.stringify(history, null, 2)], { type: 'application/json;charset=utf-8' });
+            downloadBlob(blob, `数学成绩_${formatDateForFile()}.json`);
+        }
+
+        function downloadBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function formatDateForFile() {
+            const d = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
+        }
+
+        // ========== 初始化 ==========
         window.onload = function() {
+            onGradeChange();        // 初始化年级联动
+            onTimerToggle();        // 初始化计时控件显示
             startNewPractice();
         };
     </script>
