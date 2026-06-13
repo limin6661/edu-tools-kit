@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>数学练习 - 100道计算题</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'SimSun', sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 15px;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 1.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+
+        /* 阶段指示器 */
+        .stage-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .stage-badge {
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            background: #eee;
+            color: #999;
+        }
+
+        .stage-badge.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .stage-badge.completed {
+            background: #2196F3;
+            color: white;
+        }
+
+        /* 控制按钮 */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 8px 18px;
+            font-size: 13px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary { background: #4CAF50; color: white; }
+        .btn-primary:hover:not(:disabled) { background: #43A047; }
+        .btn-secondary { background: #2196F3; color: white; }
+        .btn-secondary:hover:not(:disabled) { background: #1E88E5; }
+        .btn-warning { background: #FF9800; color: white; }
+        .btn-warning:hover:not(:disabled) { background: #F57C00; }
+        .btn-danger { background: #f44336; color: white; }
+        .btn-danger:hover:not(:disabled) { background: #D32F2F; }
+        .btn-history { background: #9C27B0; color: white; }
+        .btn-history:hover:not(:disabled) { background: #7B1FA2; }
+
+        /* 结果面板 */
+        .result-panel {
+            display: none;
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .result-panel.show { display: block; }
+
+        .result-panel h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+
+        .result-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .summary-item {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .summary-number {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .summary-label {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .summary-correct .summary-number { color: #4CAF50; }
+        .summary-wrong .summary-number { color: #f44336; }
+        .summary-unanswered .summary-number { color: #FF9800; }
+        .summary-score .summary-number { color: #2196F3; }
+
+        .result-detail {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            margin-top: 10px;
+        }
+
+        .result-detail h3 {
+            color: #333;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .result-detail p {
+            color: #666;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        /* 题目网格 - 紧凑版 */
+        .questions-grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .question-item {
+            background: #fafafa;
+            padding: 8px 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid #e0e0e0;
+            transition: all 0.2s;
+        }
+
+        .question-item.correct {
+            background: #E8F5E9;
+            border-color: #4CAF50;
+        }
+
+        .question-item.wrong {
+            background: #FFEBEE;
+            border-color: #f44336;
+        }
+
+        .question-item.corrected {
+            background: #E3F2FD;
+            border-color: #2196F3;
+        }
+
+        .question-number {
+            background: #666;
+            color: white;
+            width: 22px;
+            height: 22px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 10px;
+            font-weight: bold;
+            flex-shrink: 0;
+        }
+
+        .question-item.correct .question-number { background: #4CAF50; }
+        .question-item.wrong .question-number { background: #f44336; }
+        .question-item.corrected .question-number { background: #2196F3; }
+
+        .question-text {
+            flex: 1;
+            font-size: 13px;
+            color: #333;
+            white-space: nowrap;
+        }
+
+        .answer-input {
+            width: 50px;
+            padding: 5px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+            text-align: center;
+            transition: border-color 0.2s;
+        }
+
+        .answer-input:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .answer-input:disabled {
+            background: #f0f0f0;
+            color: #333;
+        }
+
+        /* 订正区域 */
+        .correction-section {
+            display: none;
+            background: #FFF3E0;
+            border: 1px solid #FF9800;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .correction-section.show { display: block; }
+
+        .correction-section h2 {
+            color: #E65100;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .correction-info {
+            text-align: center;
+            color: #666;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        .correction-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+            gap: 8px;
+        }
+
+        .correction-item {
+            background: white;
+            padding: 8px 10px;
+            border-radius: 5px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            border: 1px solid #FFB74D;
+        }
+
+        .correction-item .wrong-info {
+            color: #f44336;
+            font-size: 11px;
+        }
+
+        .correction-item.corrected {
+            background: #E8F5E9;
+            border-color: #4CAF50;
+        }
+
+        /* 完成庆祝 */
+        .celebration {
+            display: none;
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .celebration.show {
+            display: block;
+            animation: celebrate 0.5s ease;
+        }
+
+        @keyframes celebrate {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .celebration h2 {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .celebration p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* 历史记录模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show { display: flex; }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 90%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .modal-header h2 { color: #333; font-size: 18px; }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+        }
+
+        .history-item {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .history-date { font-weight: bold; color: #333; font-size: 13px; }
+        .history-score { font-size: 16px; font-weight: bold; }
+
+        .history-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #666;
+        }
+
+        .history-wrong-list {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .history-wrong-list h4 {
+            color: #f44336;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .wrong-question {
+            font-size: 11px;
+            color: #666;
+            padding: 3px 0;
+        }
+
+        .wrong-question span { color: #f44336; }
+
+        .no-history {
+            text-align: center;
+            color: #999;
+            padding: 30px;
+        }
+
+        /* ========== 打印样式 ========== */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                font-size: 12px;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 10px;
+                max-width: 100%;
+            }
+
+            h1 {
+                font-size: 18px;
+                margin-bottom: 3px;
+            }
+
+            .subtitle {
+                margin-bottom: 10px;
+                font-size: 11px;
+            }
+
+            /* 隐藏不需要打印的元素 */
+            .stage-indicator,
+            .controls,
+            .result-panel,
+            .correction-section,
+            .celebration,
+            .modal {
+                display: none !important;
+            }
+
+            /* 题目网格打印优化 */
+            .questions-grid {
+                grid-template-columns: repeat(5, 1fr);
+                gap: 6px;
+                margin-bottom: 10px;
+            }
+
+            .question-item {
+                padding: 6px 8px;
+                border: 1px solid #ccc;
+                background: white;
+                break-inside: avoid;
+            }
+
+            .question-number {
+                width: 20px;
+                height: 20px;
+                font-size: 9px;
+                background: #666;
+            }
+
+            .question-text {
+                font-size: 12px;
+            }
+
+            .answer-input {
+                width: 45px;
+                padding: 4px;
+                font-size: 12px;
+                border: 1px solid #999;
+                background: white;
+            }
+
+            /* 确保所有内容打印在一页 */
+            @page {
+                size: A4;
+                margin: 10mm;
+            }
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .questions-grid {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .result-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            button { width: 100%; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 数学练习题</h1>
+        <p class="subtitle">共100道计算题 | 加减乘除混合运算</p>
+
+        <!-- 阶段指示器 -->
+        <div class="stage-indicator">
+            <span class="stage-badge active" id="stage1">1. 练习</span>
+            <span class="stage-badge" id="stage2">2. 批改</span>
+            <span class="stage-badge" id="stage3">3. 订正</span>
+        </div>
+
+        <!-- 控制按钮 -->
+        <div class="controls">
+            <button class="btn-primary" id="btnNew" onclick="startNewPractice()">🔄 新练习</button>
+            <button class="btn-secondary" id="btnSubmit" onclick="submitAnswers()">✅ 提交批改</button>
+            <button class="btn-warning" id="btnCorrect" onclick="startCorrection()" style="display:none;">📝 开始订正</button>
+            <button class="btn-secondary" id="btnSubmitCorrection" onclick="submitCorrection()" style="display:none;">✅ 提交订正</button>
+            <button class="btn-danger" id="btnClear" onclick="clearAnswers()">🗑️ 清空</button>
+            <button class="btn-history" onclick="showHistory()">📚 历史</button>
+            <button class="btn-secondary" onclick="window.print()">🖨️ 打印</button>
+        </div>
+
+        <!-- 结果面板 -->
+        <div class="result-panel" id="resultPanel">
+            <h2>📊 批改结果</h2>
+            <div class="result-summary">
+                <div class="summary-item summary-correct">
+                    <div class="summary-number" id="correctCount">0</div>
+                    <div class="summary-label">正确</div>
+                </div>
+                <div class="summary-item summary-wrong">
+                    <div class="summary-number" id="wrongCount">0</div>
+                    <div class="summary-label">错误</div>
+                </div>
+                <div class="summary-item summary-unanswered">
+                    <div class="summary-number" id="unansweredCount">0</div>
+                    <div class="summary-label">未答</div>
+                </div>
+                <div class="summary-item summary-score">
+                    <div class="summary-number" id="scoreText">0</div>
+                    <div class="summary-label">得分</div>
+                </div>
+            </div>
+            <div class="result-detail" id="resultDetail"></div>
+        </div>
+
+        <!-- 订正区域 -->
+        <div class="correction-section" id="correctionSection">
+            <h2>✏️ 错题订正</h2>
+            <div class="correction-info" id="correctionInfo"></div>
+            <div class="correction-grid" id="correctionGrid"></div>
+        </div>
+
+        <!-- 完成庆祝 -->
+        <div class="celebration" id="celebration">
+            <h2>🎉 太棒了！全部订正完成！</h2>
+            <p id="celebrationText">所有错题都已正确订正，继续保持！</p>
+        </div>
+
+        <!-- 题目区域 -->
+        <div class="questions-grid" id="questionsGrid"></div>
+    </div>
+
+    <!-- 历史记录模态框 -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📚 历史记录</h2>
+                <button class="modal-close" onclick="closeHistory()">&times;</button>
+            </div>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <script>
+        // 状态管理
+        let questions = [];
+        let userAnswers = [];
+        let wrongQuestions = [];
+        let currentStage = 'practice';
+        let practiceStartTime = null;
+        let correctionRound = 0;
+
+        function randomInt(min, max) {
+            return Math.floor(Math.random() * (max - min + 1)) + min;
+        }
+
+        function generateAddition() {
+            let a, b, result;
+            do {
+                a = randomInt(100, 899);
+                b = randomInt(100, 999 - a);
+                result = a + b;
+            } while (result >= 1000);
+            return { a, b, operator: '+', result };
+        }
+
+        function generateSubtraction() {
+            let a = randomInt(200, 999);
+            let b = randomInt(100, a - 1);
+            return { a, b, operator: '-', result: a - b };
+        }
+
+        function generateMultiplication() {
+            let a, b, result;
+            do {
+                a = randomInt(100, 999);
+                b = randomInt(2, 9);
+                result = a * b;
+            } while (result >= 1000);
+            return { a, b, operator: '×', result };
+        }
+
+        function generateDivision() {
+            let b = randomInt(2, 9);
+            let result = randomInt(11, 499);
+            let a = result * b;
+            while (a < 10 || a > 999) {
+                result = randomInt(11, 499);
+                a = result * b;
+            }
+            return { a, b, operator: '÷', result };
+        }
+
+        function shuffleArray(array) {
+            const newArray = [...array];
+            for (let i = newArray.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [newArray[i], newArray[j]] = [newArray[j], newArray[i]];
+            }
+            return newArray;
+        }
+
+        function generateQuestions() {
+            questions = [];
+            for (let i = 0; i < 25; i++) {
+                questions.push(generateAddition());
+                questions.push(generateSubtraction());
+                questions.push(generateMultiplication());
+                questions.push(generateDivision());
+            }
+            questions = shuffleArray(questions);
+            userAnswers = new Array(100).fill(null);
+        }
+
+        function renderQuestions() {
+            const grid = document.getElementById('questionsGrid');
+            grid.innerHTML = '';
+
+            questions.forEach((q, index) => {
+                const item = document.createElement('div');
+                item.className = 'question-item';
+                item.id = `question-${index}`;
+
+                item.innerHTML = `
+                    <div class="question-number">${index + 1}</div>
+                    <div class="question-text">${q.a} ${q.operator} ${q.b} =</div>
+                    <input type="number" class="answer-input" id="answer-${index}"
+                           placeholder="?" onkeypress="handleEnter(event, ${index})"
+                           onchange="saveAnswer(${index})">
+                `;
+
+                grid.appendChild(item);
+            });
+
+            document.getElementById('answer-0')?.focus();
+        }
+
+        function saveAnswer(index) {
+            const input = document.getElementById(`answer-${index}`);
+            userAnswers[index] = input.value !== '' ? parseInt(input.value) : null;
+        }
+
+        function handleEnter(event, currentIndex) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                saveAnswer(currentIndex);
+                const nextIndex = currentIndex + 1;
+                if (nextIndex < 100) {
+                    document.getElementById(`answer-${nextIndex}`)?.focus();
+                } else {
+                    submitAnswers();
+                }
+            }
+        }
+
+        function startNewPractice() {
+            generateQuestions();
+            renderQuestions();
+            resetUI();
+            practiceStartTime = new Date();
+            currentStage = 'practice';
+            correctionRound = 0;
+            updateStageIndicator();
+        }
+
+        function resetUI() {
+            document.getElementById('resultPanel').classList.remove('show');
+            document.getElementById('correctionSection').classList.remove('show');
+            document.getElementById('celebration').classList.remove('show');
+            document.getElementById('questionsGrid').style.display = 'grid';
+
+            document.getElementById('btnSubmit').style.display = 'inline-block';
+            document.getElementById('btnSubmit').disabled = false;
+            document.getElementById('btnCorrect').style.display = 'none';
+            document.getElementById('btnSubmitCorrection').style.display = 'none';
+        }
+
+        function updateStageIndicator() {
+            const stages = ['stage1', 'stage2', 'stage3'];
+            stages.forEach((s, i) => {
+                const el = document.getElementById(s);
+                el.classList.remove('active', 'completed');
+                if (currentStage === 'practice' && i === 0) el.classList.add('active');
+                else if (currentStage === 'review' && i === 1) el.classList.add('active');
+                else if (currentStage === 'correction' && i === 2) el.classList.add('active');
+                else if ((currentStage === 'review' && i === 0) ||
+                         (currentStage === 'correction' && i < 2)) {
+                    el.classList.add('completed');
+                }
+            });
+        }
+
+        function submitAnswers() {
+            questions.forEach((q, index) => {
+                const input = document.getElementById(`answer-${index}`);
+                if (input) {
+                    userAnswers[index] = input.value !== '' ? parseInt(input.value) : null;
+                }
+            });
+
+            let correctCount = 0;
+            let wrongCount = 0;
+            let unansweredCount = 0;
+            wrongQuestions = [];
+
+            questions.forEach((q, index) => {
+                const item = document.getElementById(`question-${index}`);
+                const input = document.getElementById(`answer-${index}`);
+                const userAnswer = userAnswers[index];
+
+                item.classList.remove('correct', 'wrong');
+
+                if (userAnswer === null || isNaN(userAnswer)) {
+                    unansweredCount++;
+                    wrongCount++;
+                    item.classList.add('wrong');
+                    wrongQuestions.push({
+                        index,
+                        question: q,
+                        userAnswer: '未作答',
+                        correctAnswer: q.result
+                    });
+                    input.disabled = true;
+                    input.value = `×${q.result}`;
+                } else if (userAnswer === q.result) {
+                    correctCount++;
+                    item.classList.add('correct');
+                    input.disabled = true;
+                } else {
+                    wrongCount++;
+                    item.classList.add('wrong');
+                    wrongQuestions.push({
+                        index,
+                        question: q,
+                        userAnswer: userAnswer,
+                        correctAnswer: q.result
+                    });
+                    input.disabled = true;
+                    input.value = `${userAnswer}×`;
+                }
+            });
+
+            currentStage = 'review';
+            updateStageIndicator();
+
+            const score = correctCount;
+            document.getElementById('correctCount').textContent = correctCount;
+            document.getElementById('wrongCount').textContent = wrongCount;
+            document.getElementById('unansweredCount').textContent = unansweredCount;
+            document.getElementById('scoreText').textContent = score;
+
+            const timeSpent = Math.round((new Date() - practiceStartTime) / 1000 / 60);
+            let detailHTML = `<h3>📋 答题统计</h3>
+                <p>用时：约 ${timeSpent} 分钟 | 正确率：${score}% | 错题：${wrongCount} 道</p>`;
+
+            if (wrongQuestions.length > 0) {
+                detailHTML += `<p style="color:#f44336;">⚠️ 有 ${wrongQuestions.length} 道题需要订正</p>`;
+            } else {
+                detailHTML += `<p style="color:#4CAF50;">🎉 全部正确！</p>`;
+            }
+
+            document.getElementById('resultDetail').innerHTML = detailHTML;
+            document.getElementById('resultPanel').classList.add('show');
+
+            saveToHistory(correctCount, wrongCount, unansweredCount, timeSpent);
+
+            document.getElementById('btnSubmit').disabled = true;
+            if (wrongQuestions.length > 0) {
+                document.getElementById('btnCorrect').style.display = 'inline-block';
+            }
+
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function startCorrection() {
+            correctionRound++;
+            currentStage = 'correction';
+            updateStageIndicator();
+
+            document.getElementById('questionsGrid').style.display = 'none';
+            document.getElementById('correctionSection').classList.add('show');
+            document.getElementById('celebration').classList.remove('show');
+
+            document.getElementById('btnCorrect').style.display = 'none';
+            document.getElementById('btnSubmitCorrection').style.display = 'inline-block';
+
+            document.getElementById('correctionInfo').innerHTML =
+                `第 <strong>${correctionRound}</strong> 轮订正，共 <strong>${wrongQuestions.length}</strong> 道错题`;
+
+            renderCorrectionQuestions();
+        }
+
+        function renderCorrectionQuestions() {
+            const grid = document.getElementById('correctionGrid');
+            grid.innerHTML = '';
+
+            wrongQuestions.forEach((wq, i) => {
+                const item = document.createElement('div');
+                item.className = 'correction-item';
+                item.id = `correction-${wq.index}`;
+
+                item.innerHTML = `
+                    <div class="question-number" style="background:#f44336;">${wq.index + 1}</div>
+                    <div class="question-text">${wq.question.a} ${wq.question.operator} ${wq.question.b} =</div>
+                    <div class="wrong-info"><s>${wq.userAnswer}</s></div>
+                    <input type="number" class="answer-input" id="correction-answer-${wq.index}"
+                           placeholder="订正" onkeypress="handleCorrectionEnter(event, ${i})">
+                `;
+
+                grid.appendChild(item);
+            });
+
+            const firstInput = document.getElementById(`correction-answer-${wrongQuestions[0].index}`);
+            if (firstInput) firstInput.focus();
+        }
+
+        function handleCorrectionEnter(event, localIndex) {
+            if (event.key === 'Enter') {
+                event.preventDefault();
+                const nextIndex = localIndex + 1;
+                if (nextIndex < wrongQuestions.length) {
+                    const nextInput = document.getElementById(`correction-answer-${wrongQuestions[nextIndex].index}`);
+                    if (nextInput) nextInput.focus();
+                } else {
+                    submitCorrection();
+                }
+            }
+        }
+
+        function submitCorrection() {
+            let stillWrong = [];
+
+            wrongQuestions.forEach((wq, i) => {
+                const input = document.getElementById(`correction-answer-${wq.index}`);
+                const item = document.getElementById(`correction-${wq.index}`);
+                const newAnswer = input.value !== '' ? parseInt(input.value) : null;
+
+                item.classList.remove('corrected');
+
+                if (newAnswer === wq.correctAnswer) {
+                    item.classList.add('corrected');
+                    input.disabled = true;
+                    input.style.borderColor = '#4CAF50';
+                    input.style.background = '#E8F5E9';
+                } else {
+                    stillWrong.push({
+                        ...wq,
+                        userAnswer: newAnswer !== null ? newAnswer : '未订正'
+                    });
+                    input.disabled = true;
+                    input.style.borderColor = '#f44336';
+                    input.value = `${newAnswer || '×'}→${wq.correctAnswer}`;
+                }
+            });
+
+            if (stillWrong.length === 0) {
+                document.getElementById('btnSubmitCorrection').style.display = 'none';
+                document.getElementById('celebration').classList.add('show');
+                document.getElementById('celebrationText').textContent =
+                    `经过 ${correctionRound} 轮订正，所有错题都已正确订正！`;
+
+                updateHistoryWithCorrection(correctionRound);
+
+                currentStage = 'review';
+                updateStageIndicator();
+            } else {
+                wrongQuestions = stillWrong;
+                document.getElementById('correctionInfo').innerHTML =
+                    `第 <strong>${correctionRound}</strong> 轮完成，还有 <strong style="color:#f44336;">${stillWrong.length}</strong> 道错题`;
+
+                document.getElementById('btnSubmitCorrection').textContent = '📝 继续订正';
+                document.getElementById('btnSubmitCorrection').onclick = continueCorrection;
+            }
+        }
+
+        function continueCorrection() {
+            correctionRound++;
+            document.getElementById('correctionInfo').innerHTML =
+                `第 <strong>${correctionRound}</strong> 轮订正，还有 <strong>${wrongQuestions.length}</strong> 道错题`;
+
+            renderCorrectionQuestions();
+            document.getElementById('btnSubmitCorrection').textContent = '✅ 提交订正';
+            document.getElementById('btnSubmitCorrection').onclick = submitCorrection;
+        }
+
+        function clearAnswers() {
+            if (currentStage !== 'practice') return;
+
+            questions.forEach((q, index) => {
+                const input = document.getElementById(`answer-${index}`);
+                const item = document.getElementById(`question-${index}`);
+                if (input) {
+                    input.value = '';
+                    input.disabled = false;
+                }
+                if (item) {
+                    item.classList.remove('correct', 'wrong');
+                }
+            });
+            userAnswers = new Array(100).fill(null);
+        }
+
+        function saveToHistory(correct, wrong, unanswered, timeSpent) {
+            const history = JSON.parse(localStorage.getItem('mathPracticeHistory') || '[]');
+
+            const record = {
+                id: Date.now(),
+                date: new Date().toLocaleString('zh-CN'),
+                correct,
+                wrong,
+                unanswered,
+                score: correct,
+                timeSpent,
+                wrongQuestions: wrongQuestions.map(wq => ({
+                    question: `${wq.question.a} ${wq.question.operator} ${wq.question.b}`,
+                    userAnswer: wq.userAnswer,
+                    correctAnswer: wq.correctAnswer
+                })),
+                correctionRounds: 0,
+                fullyCorrected: wrongQuestions.length === 0
+            };
+
+            history.unshift(record);
+            if (history.length > 20) history.pop();
+
+            localStorage.setItem('mathPracticeHistory', JSON.stringify(history));
+        }
+
+        function updateHistoryWithCorrection(rounds) {
+            const history = JSON.parse(localStorage.getItem('mathPracticeHistory') || '[]');
+            if (history.length > 0) {
+                history[0].correctionRounds = rounds;
+                history[0].fullyCorrected = true;
+                localStorage.setItem('mathPracticeHistory', JSON.stringify(history));
+            }
+        }
+
+        function showHistory() {
+            const history = JSON.parse(localStorage.getItem('mathPracticeHistory') || '[]');
+            const listEl = document.getElementById('historyList');
+
+            if (history.length === 0) {
+                listEl.innerHTML = '<div class="no-history">暂无历史记录</div>';
+            } else {
+                listEl.innerHTML = history.map(record => `
+                    <div class="history-item">
+                        <div class="history-header">
+                            <span class="history-date">${record.date}</span>
+                            <span class="history-score" style="color: ${record.score >= 90 ? '#4CAF50' : record.score >= 60 ? '#FF9800' : '#f44336'}">
+                                ${record.score}分
+                            </span>
+                        </div>
+                        <div class="history-stats">
+                            <span>✅${record.correct}</span>
+                            <span>❌${record.wrong}</span>
+                            <span>⏱️${record.timeSpent}分钟</span>
+                            ${record.fullyCorrected ?
+                                (record.correctionRounds > 0 ?
+                                    `<span style="color:#4CAF50;">📝已订正(${record.correctionRounds}轮)</span>` :
+                                    `<span style="color:#4CAF50;">🎉首次全对</span>`) :
+                                `<span style="color:#f44336;">⚠️未完成订正</span>`
+                            }
+                        </div>
+                        ${record.wrongQuestions.length > 0 ? `
+                            <div class="history-wrong-list">
+                                <h4>❌ 错题：</h4>
+                                ${record.wrongQuestions.map(wq => `
+                                    <div class="wrong-question">
+                                        ${wq.question} = <s>${wq.userAnswer}</s> → ${wq.correctAnswer}
+                                    </div>
+                                `).join('')}
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('historyModal').classList.add('show');
+        }
+
+        function closeHistory() {
+            document.getElementById('historyModal').classList.remove('show');
+        }
+
+        document.getElementById('historyModal').addEventListener('click', function(e) {
+            if (e.target === this) closeHistory();
+        });
+
+        window.onload = function() {
+            startNewPractice();
+        };
+    </script>
+</body>
+</html>

@@ -1,0 +1,1050 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>口算100题 · 小学1-3年级数学口算练习工具 | 免费在线</title>
+    <meta name="description" content="免费在线口算练习工具：100道加减乘除随机出题、自动批改、错题订正循环、A4打印、历史记录。专为小学1-3年级家长辅导设计，无需下载安装，打开即用。">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        :root {
+            --primary: #4CAF50;
+            --primary-dark: #2E7D32;
+            --secondary: #2196F3;
+            --accent: #FF9800;
+            --danger: #f44336;
+            --text: #2c3e50;
+            --text-light: #5a6c7d;
+            --bg: #f8faf9;
+            --white: #ffffff;
+            --border: #e3e8e4;
+            --shadow: 0 4px 20px rgba(0, 0, 0, 0.06);
+            --shadow-hover: 0 8px 30px rgba(0, 0, 0, 0.12);
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Microsoft YaHei', 'PingFang SC', 'Helvetica Neue', sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            line-height: 1.7;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        .container {
+            max-width: 1100px;
+            margin: 0 auto;
+            padding: 0 20px;
+        }
+
+        /* ========== 顶部导航 ========== */
+        .navbar {
+            background: var(--white);
+            border-bottom: 1px solid var(--border);
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            box-shadow: 0 1px 10px rgba(0, 0, 0, 0.03);
+        }
+
+        .navbar-inner {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            padding: 16px 20px;
+            max-width: 1100px;
+            margin: 0 auto;
+        }
+
+        .logo {
+            font-size: 20px;
+            font-weight: 800;
+            color: var(--primary-dark);
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        .logo-icon {
+            font-size: 24px;
+        }
+
+        .nav-actions {
+            display: flex;
+            gap: 12px;
+            align-items: center;
+        }
+
+        .nav-link {
+            color: var(--text-light);
+            text-decoration: none;
+            font-size: 14px;
+            font-weight: 500;
+            transition: color 0.2s;
+        }
+
+        .nav-link:hover {
+            color: var(--primary);
+        }
+
+        /* ========== 按钮 ========== */
+        .btn {
+            display: inline-block;
+            padding: 12px 28px;
+            font-size: 15px;
+            font-weight: 600;
+            border-radius: 8px;
+            text-decoration: none;
+            border: none;
+            cursor: pointer;
+            transition: all 0.25s;
+            font-family: inherit;
+        }
+
+        .btn-primary {
+            background: var(--primary);
+            color: var(--white);
+            box-shadow: 0 4px 14px rgba(76, 175, 80, 0.3);
+        }
+
+        .btn-primary:hover {
+            background: var(--primary-dark);
+            transform: translateY(-2px);
+            box-shadow: 0 6px 20px rgba(76, 175, 80, 0.4);
+        }
+
+        .btn-secondary {
+            background: var(--white);
+            color: var(--primary-dark);
+            border: 2px solid var(--primary);
+        }
+
+        .btn-secondary:hover {
+            background: var(--primary);
+            color: var(--white);
+        }
+
+        .btn-large {
+            padding: 16px 40px;
+            font-size: 17px;
+        }
+
+        /* ========== Hero 区 ========== */
+        .hero {
+            background: linear-gradient(135deg, #4CAF50 0%, #66BB6A 50%, #81C784 100%);
+            color: var(--white);
+            padding: 80px 20px 100px;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: -50%;
+            right: -10%;
+            width: 500px;
+            height: 500px;
+            background: rgba(255, 255, 255, 0.08);
+            border-radius: 50%;
+        }
+
+        .hero::after {
+            content: '';
+            position: absolute;
+            bottom: -30%;
+            left: -5%;
+            width: 350px;
+            height: 350px;
+            background: rgba(255, 255, 255, 0.06);
+            border-radius: 50%;
+        }
+
+        .hero-content {
+            position: relative;
+            z-index: 1;
+            max-width: 800px;
+            margin: 0 auto;
+            text-align: center;
+        }
+
+        .hero-badge {
+            display: inline-block;
+            background: rgba(255, 255, 255, 0.2);
+            backdrop-filter: blur(10px);
+            padding: 6px 18px;
+            border-radius: 20px;
+            font-size: 13px;
+            font-weight: 500;
+            margin-bottom: 24px;
+            border: 1px solid rgba(255, 255, 255, 0.3);
+        }
+
+        .hero h1 {
+            font-size: 44px;
+            font-weight: 800;
+            margin-bottom: 18px;
+            line-height: 1.3;
+            letter-spacing: -0.5px;
+        }
+
+        .hero-subtitle {
+            font-size: 19px;
+            opacity: 0.95;
+            margin-bottom: 36px;
+            line-height: 1.6;
+        }
+
+        .hero-cta {
+            display: flex;
+            gap: 16px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 40px;
+        }
+
+        .btn-hero-primary {
+            background: var(--white);
+            color: var(--primary-dark);
+        }
+
+        .btn-hero-primary:hover {
+            background: #f5f5f5;
+            transform: translateY(-2px);
+        }
+
+        .btn-hero-secondary {
+            background: transparent;
+            color: var(--white);
+            border: 2px solid rgba(255, 255, 255, 0.6);
+        }
+
+        .btn-hero-secondary:hover {
+            background: rgba(255, 255, 255, 0.15);
+            border-color: var(--white);
+        }
+
+        .hero-stats {
+            display: flex;
+            gap: 40px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-top: 20px;
+        }
+
+        .hero-stat {
+            text-align: center;
+        }
+
+        .hero-stat-num {
+            font-size: 30px;
+            font-weight: 800;
+            line-height: 1;
+        }
+
+        .hero-stat-label {
+            font-size: 13px;
+            opacity: 0.9;
+            margin-top: 4px;
+        }
+
+        /* ========== 通用 Section ========== */
+        section {
+            padding: 70px 20px;
+        }
+
+        .section-title {
+            text-align: center;
+            margin-bottom: 50px;
+        }
+
+        .section-title h2 {
+            font-size: 32px;
+            font-weight: 800;
+            color: var(--text);
+            margin-bottom: 12px;
+        }
+
+        .section-title p {
+            font-size: 16px;
+            color: var(--text-light);
+        }
+
+        /* ========== 功能特性 ========== */
+        .features {
+            background: var(--white);
+        }
+
+        .features-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+        }
+
+        .feature-card {
+            background: var(--bg);
+            padding: 32px 26px;
+            border-radius: 14px;
+            border: 1px solid var(--border);
+            transition: all 0.3s;
+        }
+
+        .feature-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-hover);
+            border-color: var(--primary);
+        }
+
+        .feature-icon {
+            width: 56px;
+            height: 56px;
+            border-radius: 14px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 28px;
+            margin-bottom: 18px;
+        }
+
+        .feature-icon.green { background: #E8F5E9; }
+        .feature-icon.blue { background: #E3F2FD; }
+        .feature-icon.orange { background: #FFF3E0; }
+        .feature-icon.purple { background: #F3E5F5; }
+        .feature-icon.cyan { background: #E0F7FA; }
+        .feature-icon.pink { background: #FCE4EC; }
+
+        .feature-card h3 {
+            font-size: 18px;
+            font-weight: 700;
+            margin-bottom: 10px;
+            color: var(--text);
+        }
+
+        .feature-card p {
+            font-size: 14px;
+            color: var(--text-light);
+            line-height: 1.6;
+        }
+
+        /* ========== 使用场景 ========== */
+        .scenarios-grid {
+            display: grid;
+            grid-template-columns: repeat(3, 1fr);
+            gap: 28px;
+        }
+
+        .scenario-card {
+            background: var(--white);
+            padding: 34px 28px;
+            border-radius: 14px;
+            box-shadow: var(--shadow);
+            border-top: 4px solid var(--primary);
+            transition: all 0.3s;
+        }
+
+        .scenario-card:nth-child(2) { border-top-color: var(--secondary); }
+        .scenario-card:nth-child(3) { border-top-color: var(--accent); }
+
+        .scenario-card:hover {
+            transform: translateY(-6px);
+            box-shadow: var(--shadow-hover);
+        }
+
+        .scenario-emoji {
+            font-size: 42px;
+            margin-bottom: 16px;
+        }
+
+        .scenario-card h3 {
+            font-size: 20px;
+            font-weight: 700;
+            margin-bottom: 12px;
+            color: var(--text);
+        }
+
+        .scenario-card p {
+            font-size: 14px;
+            color: var(--text-light);
+            margin-bottom: 16px;
+        }
+
+        .scenario-tag {
+            display: inline-block;
+            background: var(--bg);
+            color: var(--primary-dark);
+            padding: 5px 14px;
+            border-radius: 20px;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        /* ========== 预览区 ========== */
+        .preview {
+            background: var(--white);
+        }
+
+        .preview-box {
+            background: var(--bg);
+            border-radius: 16px;
+            padding: 50px 30px;
+            text-align: center;
+            border: 1px solid var(--border);
+        }
+
+        .preview-mockup {
+            background: var(--white);
+            border-radius: 10px;
+            padding: 24px;
+            max-width: 600px;
+            margin: 30px auto;
+            box-shadow: var(--shadow);
+            text-align: left;
+        }
+
+        .preview-mockup-title {
+            text-align: center;
+            font-size: 16px;
+            font-weight: 700;
+            margin-bottom: 16px;
+            color: var(--text);
+        }
+
+        .preview-questions {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+
+        .preview-q {
+            background: #fafafa;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 8px;
+            font-size: 13px;
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+
+        .preview-q-num {
+            background: var(--primary);
+            color: white;
+            width: 18px;
+            height: 18px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 9px;
+            font-weight: bold;
+        }
+
+        .preview-q.wrong { background: #FFEBEE; border-color: var(--danger); }
+        .preview-q.wrong .preview-q-num { background: var(--danger); }
+        .preview-q.correct { background: #E8F5E9; border-color: var(--primary); }
+
+        .preview-q-input {
+            display: inline-block;
+            width: 28px;
+            height: 18px;
+            border: 1px solid #ccc;
+            border-radius: 3px;
+            background: white;
+        }
+
+        /* ========== 优势对比 ========== */
+        .compare {
+            background: linear-gradient(180deg, var(--bg) 0%, var(--white) 100%);
+        }
+
+        .compare-table {
+            max-width: 800px;
+            margin: 0 auto;
+            background: var(--white);
+            border-radius: 14px;
+            overflow: hidden;
+            box-shadow: var(--shadow);
+            border: 1px solid var(--border);
+        }
+
+        .compare-row {
+            display: grid;
+            grid-template-columns: 1.5fr 1fr 1fr;
+            padding: 18px 24px;
+            border-bottom: 1px solid var(--border);
+            align-items: center;
+            font-size: 14px;
+        }
+
+        .compare-row:last-child { border-bottom: none; }
+
+        .compare-header {
+            background: var(--primary);
+            color: var(--white);
+            font-weight: 700;
+            font-size: 15px;
+        }
+
+        .compare-header .compare-col-2 { color: #FFEB3B; }
+
+        .compare-col-1 {
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        .compare-col-2 {
+            color: var(--primary-dark);
+            font-weight: 600;
+        }
+
+        .compare-col-3 {
+            color: var(--text-light);
+        }
+
+        .compare-yes { color: var(--primary); font-weight: 700; }
+        .compare-no { color: var(--danger); }
+
+        /* ========== 支持作者区 ========== */
+        .support {
+            background: linear-gradient(135deg, #FFF3E0 0%, #FFE0B2 100%);
+            text-align: center;
+        }
+
+        .support-inner {
+            max-width: 700px;
+            margin: 0 auto;
+            background: var(--white);
+            padding: 50px 40px;
+            border-radius: 16px;
+            box-shadow: var(--shadow);
+        }
+
+        .support h2 {
+            font-size: 28px;
+            font-weight: 800;
+            margin-bottom: 14px;
+            color: var(--text);
+        }
+
+        .support-heart {
+            font-size: 40px;
+            margin-bottom: 12px;
+        }
+
+        .support p {
+            font-size: 15px;
+            color: var(--text-light);
+            margin-bottom: 30px;
+            line-height: 1.7;
+        }
+
+        /* 赞赏码位置 - 用户需替换 */
+        .donate-codes {
+            display: flex;
+            gap: 30px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin: 30px 0;
+        }
+
+        .donate-code {
+            text-align: center;
+        }
+
+        .donate-code-img {
+            width: 180px;
+            height: 180px;
+            border: 2px dashed var(--accent);
+            border-radius: 12px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            background: #FFF8E1;
+            color: #B8860B;
+            font-size: 13px;
+            padding: 16px;
+            text-align: center;
+        }
+
+        .donate-code-img span:first-child {
+            font-size: 32px;
+            margin-bottom: 8px;
+        }
+
+        .donate-code-label {
+            margin-top: 10px;
+            font-size: 14px;
+            font-weight: 600;
+            color: var(--text);
+        }
+
+        /* ========== FAQ ========== */
+        .faq {
+            background: var(--white);
+        }
+
+        .faq-list {
+            max-width: 760px;
+            margin: 0 auto;
+        }
+
+        .faq-item {
+            background: var(--bg);
+            border-radius: 10px;
+            margin-bottom: 14px;
+            border: 1px solid var(--border);
+            overflow: hidden;
+        }
+
+        .faq-item summary {
+            padding: 18px 22px;
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            list-style: none;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            color: var(--text);
+        }
+
+        .faq-item summary::-webkit-details-marker { display: none; }
+
+        .faq-item summary::after {
+            content: '+';
+            font-size: 22px;
+            color: var(--primary);
+            font-weight: 300;
+            transition: transform 0.2s;
+        }
+
+        .faq-item[open] summary::after {
+            transform: rotate(45deg);
+        }
+
+        .faq-item p {
+            padding: 0 22px 18px;
+            font-size: 14px;
+            color: var(--text-light);
+            line-height: 1.7;
+        }
+
+        /* ========== 最终 CTA ========== */
+        .final-cta {
+            background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+            color: var(--white);
+            text-align: center;
+            padding: 70px 20px;
+        }
+
+        .final-cta h2 {
+            font-size: 32px;
+            font-weight: 800;
+            margin-bottom: 14px;
+        }
+
+        .final-cta p {
+            font-size: 16px;
+            opacity: 0.95;
+            margin-bottom: 30px;
+        }
+
+        /* ========== 底部 ========== */
+        footer {
+            background: #1a2520;
+            color: #a0b0a8;
+            padding: 40px 20px 24px;
+            text-align: center;
+        }
+
+        .footer-links {
+            margin-bottom: 18px;
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .footer-links a {
+            color: #c0d0c8;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.2s;
+        }
+
+        .footer-links a:hover { color: var(--primary); }
+
+        .footer-copy {
+            font-size: 13px;
+            color: #708078;
+            line-height: 1.7;
+        }
+
+        /* ========== 响应式 ========== */
+        @media (max-width: 768px) {
+            .hero { padding: 50px 20px 70px; }
+            .hero h1 { font-size: 30px; }
+            .hero-subtitle { font-size: 16px; }
+            .hero-stats { gap: 24px; }
+            .hero-stat-num { font-size: 24px; }
+
+            section { padding: 50px 20px; }
+            .section-title h2 { font-size: 25px; }
+
+            .features-grid,
+            .scenarios-grid {
+                grid-template-columns: 1fr;
+                gap: 18px;
+            }
+
+            .preview-questions {
+                grid-template-columns: repeat(3, 1fr);
+            }
+
+            .compare-row {
+                grid-template-columns: 1.3fr 1fr 1fr;
+                padding: 14px 14px;
+                font-size: 13px;
+            }
+
+            .donate-codes { gap: 18px; }
+            .donate-code-img { width: 150px; height: 150px; }
+
+            .support-inner { padding: 30px 22px; }
+
+            .nav-link.desktop-only { display: none; }
+        }
+
+        @media (max-width: 480px) {
+            .preview-questions {
+                grid-template-columns: repeat(2, 1fr);
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- ========== 顶部导航 ========== -->
+    <nav class="navbar">
+        <div class="navbar-inner">
+            <div class="logo">
+                <span class="logo-icon">📝</span>
+                <span>口算100题</span>
+            </div>
+            <div class="nav-actions">
+                <a href="#features" class="nav-link desktop-only">功能</a>
+                <a href="#scenarios" class="nav-link desktop-only">场景</a>
+                <a href="#support" class="nav-link desktop-only">支持作者</a>
+                <a href="math-practice.html" target="_blank" rel="noopener" class="btn btn-primary" style="padding:8px 20px;font-size:14px;">立即练习</a>
+            </div>
+        </div>
+    </nav>
+
+    <!-- ========== Hero 区 ========== -->
+    <header class="hero">
+        <div class="hero-content">
+            <span class="hero-badge">✨ 永久免费 · 无需注册 · 打开即用</span>
+            <h1>小学口算练习神器<br>100道题，3分钟搞定</h1>
+            <p class="hero-subtitle">
+                专为 1-3 年级家长辅导设计。加减乘除随机出题，<br>
+                自动批改、错题订正、A4打印、历史记录，全免费。
+            </p>
+            <div class="hero-cta">
+                <a href="math-practice.html" target="_blank" rel="noopener" class="btn btn-large btn-hero-primary">
+                    🚀 立即开始练习
+                </a>
+                <a href="#features" class="btn btn-large btn-hero-secondary">了解更多</a>
+            </div>
+            <div class="hero-stats">
+                <div class="hero-stat">
+                    <div class="hero-stat-num">100</div>
+                    <div class="hero-stat-label">道随机题目</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-num">0</div>
+                    <div class="hero-stat-label">元使用成本</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-num">0</div>
+                    <div class="hero-stat-label">秒下载安装</div>
+                </div>
+                <div class="hero-stat">
+                    <div class="hero-stat-num">A4</div>
+                    <div class="hero-stat-label">一键打印</div>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <!-- ========== 功能特性 ========== -->
+    <section class="features" id="features">
+        <div class="container">
+            <div class="section-title">
+                <h2>六大核心功能</h2>
+                <p>覆盖口算练习全流程，比纸质练习册更高效</p>
+            </div>
+            <div class="features-grid">
+                <div class="feature-card">
+                    <div class="feature-icon green">🎲</div>
+                    <h3>随机出题</h3>
+                    <p>每次练习都是全新的 100 道题，加减乘除混合。再也不会出现"做过的题背答案"的情况。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon blue">✅</div>
+                    <h3>自动批改</h3>
+                    <p>提交即出结果：正确数、错误数、未答数、得分一目了然。家长不用再逐题对答案。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon orange">📝</div>
+                    <h3>错题订正</h3>
+                    <p>自动收集错题进入订正循环，做对为止。错题不再一错再错，真正学透每道题。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon purple">🖨️</div>
+                    <h3>A4 打印</h3>
+                    <p>一键打印成纸质练习卷，适合没屏幕时间的孩子。排版专为 A4 优化，一页整齐 100 题。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon cyan">📚</div>
+                    <h3>历史记录</h3>
+                    <p>自动保存每次练习的成绩、用时、错题。家长可以清楚看到孩子的进步轨迹。</p>
+                </div>
+                <div class="feature-card">
+                    <div class="feature-icon pink">📡</div>
+                    <h3>离线可用</h3>
+                    <p>纯网页工具，无需下载安装、无需注册登录。打开就能用，断网也能练习。</p>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== 使用场景 ========== -->
+    <section id="scenarios">
+        <div class="container">
+            <div class="section-title">
+                <h2>谁在用？三大场景</h2>
+                <p>不管你是家长、老师还是孩子，都能用得上</p>
+            </div>
+            <div class="scenarios-grid">
+                <div class="scenario-card">
+                    <div class="scenario-emoji">👨‍👩‍👧</div>
+                    <h3>家长辅导</h3>
+                    <p>每天 10 分钟陪孩子练口算，自动批改省心，错题订正有针对性。再也不用自己出题、对答案。</p>
+                    <span class="scenario-tag">每日打卡</span>
+                </div>
+                <div class="scenario-card">
+                    <div class="scenario-emoji">👩‍🏫</div>
+                    <h3>老师布置</h3>
+                    <p>打印一份就是现成的口算作业。不同学生拿到的题不一样，杜绝抄作业。零备课成本。</p>
+                    <span class="scenario-tag">作业布置</span>
+                </div>
+                <div class="scenario-card">
+                    <div class="scenario-emoji">🧒</div>
+                    <h3>孩子自学</h3>
+                    <p>提交就能看到对错，错了能马上订正，做对了有庆祝动画。像玩游戏一样练口算，孩子不抗拒。</p>
+                    <span class="scenario-tag">自主学习</span>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== 预览区 ========== -->
+    <section class="preview">
+        <div class="container">
+            <div class="section-title">
+                <h2>界面预览</h2>
+                <p>简洁清爽，5×20 排版，孩子一眼就能上手</p>
+            </div>
+            <div class="preview-box">
+                <div class="preview-mockup">
+                    <div class="preview-mockup-title">📝 数学练习题 · 共100道</div>
+                    <div class="preview-questions">
+                        <div class="preview-q"><span class="preview-q-num">1</span>258 + 431 =<span class="preview-q-input"></span></div>
+                        <div class="preview-q correct"><span class="preview-q-num">2</span>789 - 245 =<span class="preview-q-input"></span></div>
+                        <div class="preview-q"><span class="preview-q-num">3</span>156 × 4 =<span class="preview-q-input"></span></div>
+                        <div class="preview-q wrong"><span class="preview-q-num">4</span>384 ÷ 6 =<span class="preview-q-input"></span></div>
+                        <div class="preview-q correct"><span class="preview-q-num">5</span>423 + 356 =<span class="preview-q-input"></span></div>
+                        <div class="preview-q"><span class="preview-q-num">6</span>902 - 178 =<span class="preview-q-input"></span></div>
+                        <div class="preview-q"><span class="preview-q-num">7</span>234 × 3 =<span class="preview-q-input"></span></div>
+                        <div class="preview-q correct"><span class="preview-q-num">8</span>455 ÷ 5 =<span class="preview-q-input"></span></div>
+                    </div>
+                    <p style="text-align:center;font-size:12px;color:#999;margin-top:14px;">（以上为示意，实际工具为 100 道完整题目）</p>
+                </div>
+                <a href="math-practice.html" target="_blank" rel="noopener" class="btn btn-primary btn-large">
+                    👉 点此立即体验完整版
+                </a>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== 优势对比 ========== -->
+    <section class="compare">
+        <div class="container">
+            <div class="section-title">
+                <h2>为什么选口算100题</h2>
+                <p>和买练习册、用 APP 比，到底好在哪</p>
+            </div>
+            <div class="compare-table">
+                <div class="compare-row compare-header">
+                    <div>对比项</div>
+                    <div class="compare-col-2">口算100题</div>
+                    <div>纸质练习册 / 付费 APP</div>
+                </div>
+                <div class="compare-row">
+                    <div class="compare-col-1">价格</div>
+                    <div class="compare-col-2"><span class="compare-yes">永久免费</span></div>
+                    <div class="compare-col-3"><span class="compare-no">5-30元 / 月付</span></div>
+                </div>
+                <div class="compare-row">
+                    <div class="compare-col-1">题目重复</div>
+                    <div class="compare-col-2"><span class="compare-yes">每次都不同</span></div>
+                    <div class="compare-col-3"><span class="compare-no">会做过的题</span></div>
+                </div>
+                <div class="compare-row">
+                    <div class="compare-col-1">自动批改</div>
+                    <div class="compare-col-2"><span class="compare-yes">✓ 秒出结果</span></div>
+                    <div class="compare-col-3"><span class="compare-no">家长手动对</span></div>
+                </div>
+                <div class="compare-row">
+                    <div class="compare-col-1">错题订正</div>
+                    <div class="compare-col-2"><span class="compare-yes">✓ 自动循环</span></div>
+                    <div class="compare-col-3"><span class="compare-no">需自己整理</span></div>
+                </div>
+                <div class="compare-row">
+                    <div class="compare-col-1">下载/注册</div>
+                    <div class="compare-col-2"><span class="compare-yes">无需任何操作</span></div>
+                    <div class="compare-col-3"><span class="compare-no">需安装/登录</span></div>
+                </div>
+                <div class="compare-row">
+                    <div class="compare-col-1">隐私安全</div>
+                    <div class="compare-col-2"><span class="compare-yes">不收集任何数据</span></div>
+                    <div class="compare-col-3"><span class="compare-no">需授权信息</span></div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== 支持作者区 ========== -->
+    <section class="support" id="support">
+        <div class="container">
+            <div class="support-inner">
+                <div class="support-heart">☕</div>
+                <h2>支持作者，让工具持续更新</h2>
+                <p>
+                    这个工具永久免费、无广告、不收集任何用户数据。<br>
+                    如果它帮到了您和孩子，欢迎请作者喝杯咖啡 ☕<br>
+                    您的支持是我持续优化、新增功能的最大动力。
+                </p>
+
+                <!-- ================================================== -->
+                <!-- ★★★ 赞赏码位置：用户需替换为真实收款码 ★★★              -->
+                <!-- ================================================== -->
+                <!-- 使用说明：                                            -->
+                <!-- 1. 微信：打开「微信 → 我 → 服务 → 收付款 → 二维码收款」  -->
+                <!--    截图保存为 wechat-qr.jpg，放到本文件同目录            -->
+                <!-- 2. 支付宝：打开「支付宝 → 收钱码」截图保存为 alipay-qr.jpg -->
+                <!-- 3. 将下面两处 <div class="donate-code-img">...</div>    -->
+                <!--    整块替换为：                                         -->
+                <!--    <img src="wechat-qr.jpg" alt="微信赞赏码"            -->
+                <!--         style="width:180px;height:180px;border-radius:12px;"> -->
+                <!-- 4. 不想收赞赏可整段删除 .donate-codes 即可              -->
+                <!-- ================================================== -->
+
+                <div class="donate-codes">
+                    <div class="donate-code">
+                        <!-- 赞赏码位置: 微信收款码 -->
+                        <div class="donate-code-img">
+                            <span>💬</span>
+                            <span>微信赞赏码<br>（待替换）</span>
+                        </div>
+                        <div class="donate-code-label">微信</div>
+                    </div>
+                    <div class="donate-code">
+                        <!-- 赞赏码位置: 支付宝收款码 -->
+                        <div class="donate-code-img">
+                            <span>💰</span>
+                            <span>支付宝赞赏码<br>（待替换）</span>
+                        </div>
+                        <div class="donate-code-label">支付宝</div>
+                    </div>
+                </div>
+
+                <p style="font-size:13px;color:#999;margin-top:20px;">
+                    随心打赏，金额不限，1 元也是爱 ❤️
+                </p>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== FAQ ========== -->
+    <section class="faq">
+        <div class="container">
+            <div class="section-title">
+                <h2>常见问题</h2>
+                <p>家长最关心的几个问题</p>
+            </div>
+            <div class="faq-list">
+                <details class="faq-item" open>
+                    <summary>这工具真的完全免费吗？</summary>
+                    <p>是的，永久免费、无广告、不收集任何用户信息。所有数据（历史记录）都只存在您本地浏览器里，清掉浏览器缓存就没了，我们接触不到。</p>
+                </details>
+                <details class="faq-item">
+                    <summary>适合几年级的孩子？</summary>
+                    <p>主要面向小学 1-3 年级。题目难度：加法（100-999，结果不超 1000）、减法（100-999）、乘法（100-999 乘 2-9）、除法（结果整除，11-499）。4-6 年级的孩子做基础巩固也合适。</p>
+                </details>
+                <details class="faq-item">
+                    <summary>需要下载安装吗？</summary>
+                    <p>不需要。这是纯网页工具，点开链接就能用，手机、平板、电脑都能打开。如果想离线用，浏览器菜单里"添加到主屏幕"即可。</p>
+                </details>
+                <details class="faq-item">
+                    <summary>怎么打印？</summary>
+                    <p>打开练习页面，点右上角「🖨️ 打印」按钮，会自动隐藏按钮和功能区，只打印干净的 100 道题，A4 一页放得下。手机打印建议传到电脑再打。</p>
+                </details>
+                <details class="faq-item">
+                    <summary>历史记录会丢吗？</summary>
+                    <p>历史记录存在浏览器本地（localStorage），同一设备同一浏览器会一直保留。但换设备、清缓存、用无痕模式就看不到。重要成绩建议截图保存。</p>
+                </details>
+                <details class="faq-item">
+                    <summary>能调节难度吗？</summary>
+                    <p>当前版本难度固定在小学 1-3 年级范围。后续版本计划加入难度选择（一年级 20 以内、二年级 100 以内、三年级三位数）。关注更新请点底部 GitHub 链接。</p>
+                </details>
+            </div>
+        </div>
+    </section>
+
+    <!-- ========== 最终 CTA ========== -->
+    <section class="final-cta">
+        <div class="container">
+            <h2>准备好开始练习了吗？</h2>
+            <p>100 道题，3 分钟做完，自动批改，错题订正。点一下就能开始。</p>
+            <a href="math-practice.html" target="_blank" rel="noopener" class="btn btn-large btn-hero-primary">
+                🚀 立即开始练习
+            </a>
+        </div>
+    </section>
+
+    <!-- ========== 底部 ========== -->
+    <footer>
+        <div class="container">
+            <div class="footer-links">
+                <a href="math-practice.html" target="_blank" rel="noopener">开始练习</a>
+                <a href="#features">功能特性</a>
+                <a href="#support">支持作者</a>
+                <!-- GitHub 链接占位：用户需替换为自己的仓库地址 -->
+                <!-- 例如：https://github.com/你的用户名/edu-tools-kit -->
+                <a href="https://github.com" target="_blank" rel="noopener">GitHub 源码</a>
+            </div>
+            <div class="footer-copy">
+                <p>© 2026 口算100题 · 小学数学口算练习工具</p>
+                <p>本工具为免费开源项目，仅供学习交流使用，不保证题目准确性，请家长陪同使用。</p>
+            </div>
+        </div>
+    </footer>
+
+</body>
+</html>

@@ -1,0 +1,756 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>五子棋 (颜值回滚+最强内核)</title>
+    <style>
+        body {
+            font-family: '微软雅黑', sans-serif;
+            background-color: #dcdcdc; /* 恢复之前的经典灰底 */
+            display: flex;
+            flex-direction: row;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+            gap: 30px;
+            overflow: hidden;
+            user-select: none;
+        }
+
+        /* 侧边栏恢复圆角卡片风 */
+        .side-panel { display: flex; flex-direction: column; width: 260px; height: 680px; justify-content: space-between; }
+        .left-panel { align-items: flex-end; text-align: right; }
+        .right-panel { align-items: flex-start; text-align: left; }
+        
+        h1 { color: #333; margin: 0; font-size: 32px; text-shadow: 1px 1px 2px white; }
+
+        .settings-card {
+            background: white; padding: 12px 15px; border-radius: 12px;
+            box-shadow: 0 4px 10px rgba(0,0,0,0.1); margin-top: 10px; width: 100%; box-sizing: border-box;
+        }
+        .settings-title { font-size: 14px; color: #888; margin-bottom: 6px; font-weight: bold;}
+        
+        .radio-group { display: flex; flex-direction: column; gap: 6px; }
+        .radio-label { 
+            display: flex; align-items: center; cursor: pointer; font-size: 14px;
+            padding: 4px; border-radius: 5px; transition: background 0.2s;
+        }
+        .radio-label:hover { background: #f0f0f0; }
+        .radio-label input { margin-right: 8px; accent-color: #2E7D32; }
+
+        .status-text { font-size: 20px; color: #333; font-weight: bold; margin: 5px 0; }
+        .ai-thinking { 
+            color: #d9534f; font-size: 14px; display: none; font-weight: bold; 
+            animation: blink 0.5s infinite; 
+        }
+        @keyframes blink { 50% { opacity: 0.5; } }
+
+        /* 经典的木纹棋盒 */
+        .bowl-container { display: flex; flex-direction: column; align-items: center; margin-bottom: 20px; position: relative; }
+        .bowl {
+            width: 120px; height: 120px; border-radius: 50%; position: relative; cursor: pointer;
+            border: 4px solid rgba(0,0,0,0.1); transition: transform 0.2s;
+            display: flex; justify-content: center; align-items: center;
+        }
+        .bowl-wood {
+            background: radial-gradient(circle at 30% 30%, #a0522d, #5c2812);
+            box-shadow: 10px 10px 20px rgba(0,0,0,0.5), inset 5px 5px 15px rgba(255,255,255,0.1);
+        }
+        .chess-pile { width: 90px; height: 90px; border-radius: 50%; }
+        .pile-black { background: radial-gradient(circle at 30% 30%, #444, #000); }
+        .pile-white { background: radial-gradient(circle at 30% 30%, #fff, #ddd); }
+
+        /* 呼吸灯特效 */
+        .active-turn-manual { box-shadow: 0 0 25px #Fbc02d; transform: scale(1.05); border-color: #Fbc02d; animation: pulse 2s infinite; }
+        .active-turn-auto { box-shadow: 0 0 15px rgba(0,0,0,0.3); border-color: #888; }
+        .picked-up { transform: scale(0.95); box-shadow: 0 0 15px #4CAF50 !important; border-color: #4CAF50; animation: none; }
+        @keyframes pulse { 0% { box-shadow: 0 0 15px #Fbc02d; } 50% { box-shadow: 0 0 30px #Fbc02d; } 100% { box-shadow: 0 0 15px #Fbc02d; } }
+
+        .board-wrapper {
+            box-shadow: 15px 15px 40px rgba(0,0,0,0.4), -5px -5px 15px rgba(255,255,255,0.2);
+            border-radius: 8px; padding: 5px; background: #9d6b3e; line-height: 0;
+        }
+        canvas { background-color: #DEB887; border-radius: 4px; cursor: default; }
+        
+        .btn-group { display: flex; flex-direction: column; gap: 15px; width: 100%; }
+        button {
+            padding: 12px 0; width: 100%; font-size: 16px; color: white; border: none; border-radius: 8px; cursor: pointer;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.2); font-weight: bold;
+        }
+        button:hover { transform: translateY(-2px); }
+        .btn-undo { background-color: #F9A825; }
+        .btn-restart { background-color: #2E7D32; }
+    </style>
+</head>
+<body>
+
+    <div class="side-panel left-panel">
+        <div style="width: 100%;">
+            <h1>五子棋</h1>
+            <div class="settings-card">
+                <div class="settings-title">对战模式</div>
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="mode" value="pve" checked onclick="setMode('pve')"> 人机 (魔王级)</label>
+                    <label class="radio-label"><input type="radio" name="mode" value="pvp" onclick="setMode('pvp')"> 人人对战</label>
+                </div>
+            </div>
+            <div class="settings-card">
+                <div class="settings-title">拿子方式</div>
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="pickup" value="auto" checked onclick="setPickupMode('auto')"> 快捷 (自动带子)</label>
+                    <label class="radio-label"><input type="radio" name="pickup" value="manual" onclick="setPickupMode('manual')"> 沉浸 (手动点盒)</label>
+                </div>
+            </div>
+            <div class="settings-card" id="difficultyPanel">
+                <div class="settings-title">AI 算法内核</div>
+                <div class="radio-group">
+                    <label class="radio-label"><input type="radio" name="diff" value="normal" onclick="setDiff('normal')"> 标准 (基础防守)</label>
+                    <label class="radio-label"><input type="radio" name="diff" value="hard" checked onclick="setDiff('hard')"> 极难 (深搜+算杀)</label>
+                </div>
+            </div>
+            <div class="settings-card" style="text-align: center; margin-top: 10px;">
+                <div class="status-text" id="statusText">准备开始</div>
+                <div class="ai-thinking" id="aiThinking">⚡ 亿万次推演中...</div>
+            </div>
+        </div>
+        <div class="bowl-container">
+            <div id="bowlBlack" class="bowl bowl-wood" onclick="clickBowl(true)">
+                <div class="chess-pile pile-black"></div>
+            </div>
+            <div style="margin-top:5px; font-weight:bold; color:#555">黑棋 (你)</div>
+        </div>
+    </div>
+    
+    <div class="board-wrapper">
+        <canvas id="chessBoard" width="600" height="600"></canvas>
+    </div>
+    
+    <div class="side-panel right-panel">
+        <div class="btn-group">
+            <button class="btn-restart" onclick="resetGame()">🔄 重新开始</button>
+            <button class="btn-undo" onclick="undoMove()">⬅️ 悔 棋</button>
+        </div>
+        <div class="bowl-container">
+            <div id="bowlWhite" class="bowl bowl-wood" onclick="clickBowl(false)">
+                <div class="chess-pile pile-white"></div>
+            </div>
+            <div style="margin-top:5px; font-weight:bold; color:#555">白棋</div>
+        </div>
+    </div>
+
+<script>
+    // --- 游戏常量 ---
+    const GRID_SIZE = 15;
+    const CELL_SIZE = 40;
+    const OFFSET = CELL_SIZE / 2;
+    const PIECE_RADIUS = CELL_SIZE * 0.45;
+    const CANVAS_SIZE = GRID_SIZE * CELL_SIZE;
+
+    // --- 算法权重常量 (开源标准) ---
+    const R_FIVE = 10000000; 
+    const R_LIVE4 = 100000;
+    const R_DEAD4 = 10000;
+    const R_LIVE3 = 8000;
+    const R_DEAD3 = 1000;
+    const R_LIVE2 = 500;
+    const R_DEAD2 = 100;
+
+    // ✅ 修复：原代码引用了 R_FOUR 但没定义，导致 AI 偶发直接报错
+    // “冲四以上”阈值，用 DEAD4 更合理（包含冲四/眠四）
+    const R_FOUR = R_DEAD4;
+
+    // --- 状态变量 ---
+    let gameMode = 'pve'; 
+    let pickupMode = 'auto'; 
+    let difficulty = 'hard';
+    let isBlackTurn = true;
+    let isHoldingPiece = false;
+    let isGameOver = false;
+    let isAIThinking = false;
+    let chessBoard = []; 
+    let moveHistory = [];
+    let winningCoords = [];
+    let hoverI = -1, hoverJ = -1;
+
+    // --- DOM 引用 ---
+    const canvas = document.getElementById('chessBoard');
+    const ctx = canvas.getContext('2d');
+    const statusText = document.getElementById('statusText');
+    const aiThinkingText = document.getElementById('aiThinking');
+    const bowlBlack = document.getElementById('bowlBlack');
+    const bowlWhite = document.getElementById('bowlWhite');
+    const difficultyPanel = document.getElementById('difficultyPanel');
+
+    // =========================================================
+    // ✅ 更强内核：Zobrist + 置换表(缓存) + 迭代加深(时间预算)
+    // =========================================================
+    let zobrist = [];
+    let boardHash = 0n;
+    const TT = new Map(); // transposition table
+
+    function rand64Factory() {
+        // 固定种子，保证每次刷新强度一致
+        let seed = 1469598103934665603n;
+        return function rand64() {
+            // xorshift64*
+            seed ^= (seed << 13n);
+            seed ^= (seed >> 7n);
+            seed ^= (seed << 17n);
+            return seed & ((1n << 64n) - 1n);
+        }
+    }
+
+    function initZobrist() {
+        const rnd = rand64Factory();
+        zobrist = Array.from({length: GRID_SIZE}, () =>
+            Array.from({length: GRID_SIZE}, () => [0n, rnd(), rnd()])
+        );
+    }
+
+    function placeStone(i, j, color) {
+        chessBoard[i][j] = color;
+        boardHash ^= zobrist[i][j][color];
+    }
+    function removeStone(i, j, color) {
+        chessBoard[i][j] = 0;
+        boardHash ^= zobrist[i][j][color];
+    }
+
+    // --- 初始化 ---
+    function initArray() {
+        chessBoard = Array.from({length: GRID_SIZE}, () => Array(GRID_SIZE).fill(0));
+        boardHash = 0n;
+        TT.clear();
+    }
+    initZobrist();
+    initArray();
+
+    // --- 设置逻辑 ---
+    function setMode(mode) {
+        if(moveHistory.length > 0 && !confirm("切换模式将重新开始游戏，确定吗？")) {
+            document.querySelector(`input[name="mode"][value="${gameMode}"]`).checked = true; return;
+        }
+        gameMode = mode;
+        difficultyPanel.style.display = (mode === 'pve') ? 'block' : 'none';
+        resetGame();
+    }
+    function setDiff(diff) { difficulty = diff; if(gameMode === 'pve' && moveHistory.length > 0) resetGame(); }
+    function setPickupMode(mode) { pickupMode = mode; updateTurnState(); }
+
+    // --- 交互逻辑 ---
+    function clickBowl(clickBlack) {
+        if (pickupMode === 'auto') return;
+        if (isGameOver || isAIThinking) return;
+        if (gameMode === 'pve' && !clickBlack) return; 
+        if ((isBlackTurn && !clickBlack) || (!isBlackTurn && clickBlack)) return;
+        isHoldingPiece = true; updateUI(); canvas.style.cursor = "crosshair";
+    }
+
+    canvas.onclick = function(e) {
+        if (isGameOver || isAIThinking || !isHoldingPiece) return;
+
+        // ✅ 修复：原来依赖 hoverI/hoverJ，第一次点击可能还是 -1 导致“点了不落子”
+        let i = Math.floor(e.offsetX / CELL_SIZE);
+        let j = Math.floor(e.offsetY / CELL_SIZE);
+        hoverI = i; hoverJ = j;
+
+        if (isValidMove(i, j)) {
+            makeMove(i, j, isBlackTurn ? 1 : 2);
+            isHoldingPiece = false; canvas.style.cursor = "default";
+            if (checkWin(i, j)) gameOver(isBlackTurn ? 1 : 2);
+            else {
+                isBlackTurn = !isBlackTurn;
+                if (gameMode === 'pve' && !isBlackTurn) triggerAI();
+                else updateTurnState();
+            }
+            repaint();
+        }
+    }
+
+    function triggerAI() {
+        isAIThinking = true; isHoldingPiece = false; updateUI();
+
+        setTimeout(() => {
+            let move = getBestMove();
+            if (!move) {
+                // 极端情况：棋盘满了或无候选点
+                isAIThinking = false; updateTurnState(); return;
+            }
+            makeMove(move.i, move.j, 2);
+            if (checkWin(move.i, move.j)) gameOver(2);
+            else {
+                isBlackTurn = !isBlackTurn; isAIThinking = false; updateTurnState();
+            }
+            repaint();
+        }, 50);
+    }
+
+    // =========================================================
+    // 🔥 核心算法：战术优先 + AlphaBeta + 缓存 + 时间预算 🔥
+    // =========================================================
+
+    function getBestMove() {
+        // 开局库简化
+        if (moveHistory.length === 0) return {i: 7, j: 7};
+        if (moveHistory.length === 1 && moveHistory[0].i === 7 && moveHistory[0].j === 7) return {i: 6, j: 6};
+
+        // ✅ 先做“必胜/必防/必冲四/必堵冲四/双三”战术处理（比纯评分稳得多）
+        let m;
+
+        m = findImmediateWinMove(2); if (m) return m;      // 我方一手赢
+        m = findImmediateWinMove(1); if (m) return m;      // 必须堵对方一手赢
+
+        m = findThreatMove(2, 'live4'); if (m) return m;   // 我方活四
+        m = findThreatMove(1, 'live4'); if (m) return m;   // 堵对方活四
+
+        m = findThreatMove(2, 'dead4'); if (m) return m;   // 我方冲四
+        m = findThreatMove(1, 'dead4'); if (m) return m;   // 堵对方冲四
+
+        m = findThreatMove(2, 'doubleLive3'); if (m) return m; // 我方双活三
+        m = findThreatMove(1, 'doubleLive3'); if (m) return m; // 堵对方双活三
+
+        // 标准难度：贪心即可
+        if (difficulty === 'normal') return getBestMoveGreedy();
+
+        // Hard：Alpha-Beta + 迭代加深（时间预算）
+        let candidates = getCandidates();
+        if (candidates.length === 0) return {i: 7, j: 7};
+
+        // 预排序：攻防综合
+        for (let p of candidates) {
+            p.score = evaluatePointShape(p.i, p.j, 2) + evaluatePointShape(p.i, p.j, 1);
+        }
+        candidates.sort((a,b) => b.score - a.score);
+
+        // 时间预算（毫秒）
+        const start = performance.now();
+        const TIME_LIMIT = 220;
+
+        // 动态最大深度：中后盘稍微加深
+        const maxDepth = (moveHistory.length < 10) ? 4 : 5;
+
+        let bestMove = candidates[0];
+        let bestVal = -Infinity;
+
+        // 迭代加深：2 -> maxDepth，只要没超时就继续更深
+        for (let depth = 2; depth <= maxDepth; depth++) {
+            if (performance.now() - start > TIME_LIMIT) break;
+
+            let localBestMove = bestMove;
+            let localBestVal = -Infinity;
+
+            // 根节点宽度更大一点
+            const searchWidth = Math.min(candidates.length, 14);
+
+            for (let k = 0; k < searchWidth; k++) {
+                if (performance.now() - start > TIME_LIMIT) break;
+
+                let p = candidates[k];
+                placeStone(p.i, p.j, 2);
+
+                // 一手赢直接拿下
+                if (checkWinVirtual(p.i, p.j, 2)) {
+                    removeStone(p.i, p.j, 2);
+                    return p;
+                }
+
+                let val = alphaBeta(depth - 1, -Infinity, Infinity, false, start, TIME_LIMIT);
+                removeStone(p.i, p.j, 2);
+
+                if (val > localBestVal) {
+                    localBestVal = val;
+                    localBestMove = p;
+                }
+            }
+
+            // 只有这一层完整跑完（没明显超时）才更新全局最优
+            if (performance.now() - start <= TIME_LIMIT) {
+                bestMove = localBestMove;
+                bestVal = localBestVal;
+            } else {
+                break;
+            }
+        }
+        return bestMove;
+    }
+
+    function alphaBeta(depth, alpha, beta, isMaximizing, startTime, timeLimit) {
+        if (performance.now() - startTime > timeLimit) {
+            // 超时：返回当前静态估值（保证不断电）
+            return evaluateBoard();
+        }
+
+        // 置换表 key
+        const key = boardHash.toString() + "|" + depth + "|" + (isMaximizing ? 1 : 0);
+        const hit = TT.get(key);
+        if (hit !== undefined) return hit;
+
+        if (depth === 0) {
+            const v = evaluateBoard();
+            TT.set(key, v);
+            return v;
+        }
+
+        let moves = getCandidates();
+        if (moves.length === 0) {
+            const v = evaluateBoard();
+            TT.set(key, v);
+            return v;
+        }
+
+        const role = isMaximizing ? 2 : 1;
+        const opp = (role === 1) ? 2 : 1;
+
+        // 排序：优先高威胁点（更强也更快）
+        for (let p of moves) {
+            p.score = evaluatePointShape(p.i, p.j, role) + evaluatePointShape(p.i, p.j, opp) * 0.9;
+        }
+        moves.sort((a,b) => b.score - a.score);
+
+        // 每层宽度限制（越深越窄）
+        const limit = Math.min(moves.length, depth >= 4 ? 7 : 9);
+
+        let best;
+        if (isMaximizing) {
+            best = -Infinity;
+            for (let k = 0; k < limit; k++) {
+                if (performance.now() - startTime > timeLimit) break;
+
+                let p = moves[k];
+                placeStone(p.i, p.j, 2);
+
+                if (checkWinVirtual(p.i, p.j, 2)) {
+                    removeStone(p.i, p.j, 2);
+                    TT.set(key, R_FIVE);
+                    return R_FIVE;
+                }
+
+                let v = alphaBeta(depth - 1, alpha, beta, false, startTime, timeLimit);
+                removeStone(p.i, p.j, 2);
+
+                best = Math.max(best, v);
+                alpha = Math.max(alpha, v);
+                if (beta <= alpha) break;
+            }
+        } else {
+            best = Infinity;
+            for (let k = 0; k < limit; k++) {
+                if (performance.now() - startTime > timeLimit) break;
+
+                let p = moves[k];
+                placeStone(p.i, p.j, 1);
+
+                if (checkWinVirtual(p.i, p.j, 1)) {
+                    removeStone(p.i, p.j, 1);
+                    TT.set(key, -R_FIVE);
+                    return -R_FIVE;
+                }
+
+                let v = alphaBeta(depth - 1, alpha, beta, true, startTime, timeLimit);
+                removeStone(p.i, p.j, 1);
+
+                best = Math.min(best, v);
+                beta = Math.min(beta, v);
+                if (beta <= alpha) break;
+            }
+        }
+
+        TT.set(key, best);
+        return best;
+    }
+
+    // ✅ 更稳的静态估值：看“候选点”的攻防机会（比你原来只加己方棋子分数更像人）
+    function evaluateBoard() {
+        let candidates = getCandidates();
+        if (candidates.length === 0) return 0;
+
+        let my = [];
+        let op = [];
+
+        for (let p of candidates) {
+            my.push(evaluatePointShape(p.i, p.j, 2));
+            op.push(evaluatePointShape(p.i, p.j, 1));
+        }
+
+        my.sort((a,b) => b - a);
+        op.sort((a,b) => b - a);
+
+        // 取前几项，避免全盘噪声
+        const take = 6;
+        let mySum = 0, opSum = 0;
+        for (let i = 0; i < Math.min(take, my.length); i++) mySum += my[i];
+        for (let i = 0; i < Math.min(take, op.length); i++) opSum += op[i];
+
+        // 防守略重一些，AI 会更“不会送”
+        return mySum - opSum * 1.15;
+    }
+
+    // ✅ 战术：一手必胜（真正落子验证，不靠评分猜）
+    function findImmediateWinMove(role) {
+        let moves = getCandidates();
+        for (let p of moves) {
+            placeStone(p.i, p.j, role);
+            const win = checkWinVirtual(p.i, p.j, role);
+            removeStone(p.i, p.j, role);
+            if (win) return p;
+        }
+        return null;
+    }
+
+    // ✅ 战术：找活四/冲四/双活三（直接用方向分数判断，避免“分数凑够了但其实不是四”的误判）
+    function analyzePoint(x, y, role) {
+        const d1 = evalDir(x, y, 1, 0, role);
+        const d2 = evalDir(x, y, 0, 1, role);
+        const d3 = evalDir(x, y, 1, 1, role);
+        const d4 = evalDir(x, y, 1, -1, role);
+        const dirs = [d1, d2, d3, d4];
+
+        return {
+            dirs,
+            hasLive4: dirs.some(s => s === R_LIVE4),
+            hasDead4: dirs.some(s => s === R_DEAD4),
+            live3Count: dirs.filter(s => s === R_LIVE3).length
+        };
+    }
+
+    function findThreatMove(role, kind) {
+        let moves = getCandidates();
+        if (moves.length === 0) return null;
+
+        let best = null;
+        let bestScore = -Infinity;
+
+        for (let p of moves) {
+            const a = analyzePoint(p.i, p.j, role);
+            let ok = false;
+
+            if (kind === 'live4') ok = a.hasLive4;
+            else if (kind === 'dead4') ok = a.hasDead4 || a.hasLive4; // 活四也算“至少冲四”
+            else if (kind === 'doubleLive3') ok = a.live3Count >= 2;
+
+            if (!ok) continue;
+
+            // 同类威胁里选更“值钱”的（攻防综合）
+            const s = evaluatePointShape(p.i, p.j, role) + evaluatePointShape(p.i, p.j, role === 1 ? 2 : 1) * 0.8;
+            if (s > bestScore) { bestScore = s; best = p; }
+        }
+        return best;
+    }
+
+    // --- 棋型识别 (Shape Match) ---
+    function evaluatePointShape(x, y, role) {
+        let score = 0;
+        score += evalDir(x, y, 1, 0, role);
+        score += evalDir(x, y, 0, 1, role);
+        score += evalDir(x, y, 1, 1, role);
+        score += evalDir(x, y, 1, -1, role);
+        return score;
+    }
+
+    function evalDir(x, y, dx, dy, role) {
+        let line = [];
+        for (let k = -4; k <= 4; k++) {
+            let nx = x + k * dx, ny = y + k * dy;
+            if (nx < 0 || nx >= GRID_SIZE || ny < 0 || ny >= GRID_SIZE) line.push(3); // 边界
+            else if (chessBoard[nx][ny] === 0) line.push(0);
+            else if (chessBoard[nx][ny] === role) line.push(1); // 己方
+            else line.push(2); // 敌方
+        }
+        line[4] = 1; // 假设当前位落子
+        let s = line.join("");
+
+        if (s.includes("11111")) return R_FIVE;
+        if (s.includes("011110")) return R_LIVE4;
+        if (s.includes("11110") || s.includes("01111") || s.includes("10111") || s.includes("11011") || s.includes("11101")) return R_DEAD4;
+        if (s.includes("01110") || s.includes("010110") || s.includes("011010")) return R_LIVE3;
+        if (s.includes("11100") || s.includes("00111") || s.includes("11010") || s.includes("10110") || s.includes("01011") || s.includes("10011")) return R_DEAD3;
+        if (s.includes("00110") || s.includes("01100") || s.includes("01010")) return R_LIVE2;
+        if (s.includes("11000") || s.includes("00011") || s.includes("21100") || s.includes("00112")) return R_DEAD2;
+        return 0;
+    }
+
+    function getCandidates() {
+        let moves = [];
+        let visited = new Set();
+        let hasStone = false;
+
+        for (let i = 0; i < GRID_SIZE; i++) {
+            for (let j = 0; j < GRID_SIZE; j++) {
+                if (chessBoard[i][j] !== 0) {
+                    hasStone = true;
+                    for (let dx = -2; dx <= 2; dx++) {
+                        for (let dy = -2; dy <= 2; dy++) {
+                            let ni = i + dx, nj = j + dy;
+                            if (ni >= 0 && ni < GRID_SIZE && nj >= 0 && nj < GRID_SIZE && chessBoard[ni][nj] === 0) {
+                                let key = ni * 100 + nj;
+                                if (!visited.has(key)) {
+                                    moves.push({i: ni, j: nj});
+                                    visited.add(key);
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+        }
+
+        // ✅ 兜底：极端情况下没有候选点（或全空）
+        if (!hasStone) return [{i: 7, j: 7}];
+
+        return moves;
+    }
+    
+    function getBestMoveGreedy() {
+        let candidates = getCandidates();
+        let maxS = -Infinity, best = candidates[0];
+        for (let p of candidates) {
+            let s = evaluatePointShape(p.i, p.j, 2) + evaluatePointShape(p.i, p.j, 1);
+            if (s > maxS) { maxS = s; best = p; }
+        }
+        return best;
+    }
+
+    // --- 基础逻辑 ---
+    function makeMove(i, j, color) { 
+        placeStone(i, j, color);
+        moveHistory.push({i, j, color}); 
+        // 搜索缓存只对“某一局的某一盘面”有效，落子后清掉更稳
+        TT.clear();
+    }
+    
+    function updateTurnState() {
+        if (isGameOver) { updateUI(); return; }
+        if (pickupMode === 'auto') { isHoldingPiece = true; canvas.style.cursor = "crosshair"; }
+        else { isHoldingPiece = false; canvas.style.cursor = "not-allowed"; }
+        updateUI();
+    }
+    
+    function updateUI() {
+        bowlBlack.className = "bowl bowl-wood"; bowlWhite.className = "bowl bowl-wood";
+        aiThinkingText.style.display = isAIThinking ? "block" : "none";
+        if (isGameOver) { statusText.innerText = "游戏结束"; return; }
+        let name = isBlackTurn ? "黑棋" : "白棋";
+        if (isAIThinking) { statusText.innerText = "AI 深度推演中..."; statusText.style.color = "#d9534f"; bowlWhite.classList.add("active-turn-auto"); return; }
+        if (isHoldingPiece) {
+            statusText.innerText = name + " 请落子"; statusText.style.color = "#2E7D32";
+            if(pickupMode==='manual') (isBlackTurn?bowlBlack:bowlWhite).classList.add("picked-up");
+            else (isBlackTurn?bowlBlack:bowlWhite).classList.add("active-turn-auto");
+        } else {
+            statusText.innerText = name + " 拿子"; statusText.style.color = "#333";
+            (isBlackTurn?bowlBlack:bowlWhite).classList.add("active-turn-manual");
+        }
+    }
+    
+    function repaint() {
+        ctx.clearRect(0,0,CANVAS_SIZE,CANVAS_SIZE);
+        ctx.beginPath(); ctx.strokeStyle = "#594128"; ctx.lineWidth = 1.5;
+        for(let i=0;i<GRID_SIZE;i++){
+            ctx.moveTo(OFFSET+i*CELL_SIZE,OFFSET); ctx.lineTo(OFFSET+i*CELL_SIZE,CANVAS_SIZE-OFFSET);
+            ctx.moveTo(OFFSET,OFFSET+i*CELL_SIZE); ctx.lineTo(CANVAS_SIZE-OFFSET,OFFSET+i*CELL_SIZE);
+        }
+        ctx.stroke();
+        [[3,3],[11,3],[7,7],[3,11],[11,11]].forEach(p=>{
+            ctx.beginPath(); ctx.arc(OFFSET+p[0]*CELL_SIZE,OFFSET+p[1]*CELL_SIZE,4,0,2*Math.PI); ctx.fillStyle="#594128"; ctx.fill();
+        });
+        for(let i=0;i<GRID_SIZE;i++)for(let j=0;j<GRID_SIZE;j++)if(chessBoard[i][j]!=0)drawChess(i,j,chessBoard[i][j]==1);
+        if(!isGameOver&&!isAIThinking&&isHoldingPiece&&isValidMove(hoverI,hoverJ)) drawGhostChess(hoverI,hoverJ,isBlackTurn);
+        if(isGameOver&&winningCoords.length>0){
+            ctx.save(); ctx.strokeStyle='red'; ctx.lineWidth=5; ctx.shadowColor='red'; ctx.shadowBlur=10; ctx.beginPath();
+            winningCoords.forEach((c,idx)=>{
+                let x=OFFSET+c[0]*CELL_SIZE,y=OFFSET+c[1]*CELL_SIZE;
+                idx==0?ctx.moveTo(x,y):ctx.lineTo(x,y);
+            });
+            ctx.stroke(); ctx.restore();
+        }
+    }
+    
+    function drawChess(i,j,isB){
+        ctx.beginPath(); let x=OFFSET+i*CELL_SIZE,y=OFFSET+j*CELL_SIZE;
+        ctx.arc(x,y,PIECE_RADIUS,0,2*Math.PI);
+        let g=ctx.createRadialGradient(x+2,y-2,PIECE_RADIUS,x+2,y-2,0);
+        if(isB){g.addColorStop(0,"#000");g.addColorStop(1,"#666");}else{g.addColorStop(0,"#ccc");g.addColorStop(1,"#fff");}
+        ctx.fillStyle=g;
+        let last=moveHistory[moveHistory.length-1];
+        if(last&&last.i==i&&last.j==j){ctx.shadowColor="rgba(0,255,0,0.8)";ctx.shadowBlur=10;}
+        else{ctx.shadowColor="rgba(0,0,0,0.5)";ctx.shadowBlur=4;ctx.shadowOffsetX=2;ctx.shadowOffsetY=2;}
+        ctx.fill(); ctx.shadowColor="transparent"; ctx.shadowBlur=0;
+    }
+    
+    function drawGhostChess(i,j,isB){
+        ctx.save(); ctx.globalAlpha=0.6; let x=OFFSET+i*CELL_SIZE,y=OFFSET+j*CELL_SIZE;
+        ctx.beginPath(); ctx.arc(x,y,PIECE_RADIUS,0,2*Math.PI); ctx.fillStyle=isB?"black":"white"; ctx.fill();
+        ctx.strokeStyle="#2E7D32"; ctx.lineWidth=2; ctx.strokeRect(x-CELL_SIZE/2+2,y-CELL_SIZE/2+2,CELL_SIZE-4,CELL_SIZE-4); ctx.restore();
+    }
+    
+    function isValidMove(i,j){ return i>=0&&i<GRID_SIZE&&j>=0&&j<GRID_SIZE&&chessBoard[i][j]==0; }
+    canvas.onmousemove=function(e){
+        if(isGameOver)return; 
+        let i=Math.floor(e.offsetX/CELL_SIZE), j=Math.floor(e.offsetY/CELL_SIZE);
+        if(hoverI!=i||hoverJ!=j){hoverI=i;hoverJ=j;repaint();}
+    }
+    canvas.onmouseleave=function(){hoverI=-1;hoverJ=-1;repaint();}
+
+    function checkWin(x,y){ 
+        let r=chessBoard[x][y]; 
+        return checkLine(x,y,1,0,r)||checkLine(x,y,0,1,r)||checkLine(x,y,1,1,r)||checkLine(x,y,1,-1,r); 
+    }
+
+    // ✅ 修复：搜索用的胜负判断必须“无副作用”，不能改 winningCoords
+    function checkWinVirtual(x,y,r){
+        return checkLineVirtual(x,y,1,0,r)||checkLineVirtual(x,y,0,1,r)||checkLineVirtual(x,y,1,1,r)||checkLineVirtual(x,y,1,-1,r);
+    }
+    function checkLineVirtual(x,y,dx,dy,r){
+        let cnt = 1;
+        for(let k=1;k<5;k++){let nx=x+k*dx,ny=y+k*dy;if(nx>=0&&nx<GRID_SIZE&&ny>=0&&ny<GRID_SIZE&&chessBoard[nx][ny]==r)cnt++;else break;}
+        for(let k=1;k<5;k++){let nx=x-k*dx,ny=y-k*dy;if(nx>=0&&nx<GRID_SIZE&&ny>=0&&ny<GRID_SIZE&&chessBoard[nx][ny]==r)cnt++;else break;}
+        return cnt>=5;
+    }
+
+    function checkLine(x,y,dx,dy,r){
+        let l=[[x,y]];
+        for(let k=1;k<5;k++){let nx=x+k*dx,ny=y+k*dy;if(nx>=0&&nx<GRID_SIZE&&ny>=0&&ny<GRID_SIZE&&chessBoard[nx][ny]==r)l.push([nx,ny]);else break;}
+        for(let k=1;k<5;k++){let nx=x-k*dx,ny=y-k*dy;if(nx>=0&&nx<GRID_SIZE&&ny>=0&&ny<GRID_SIZE&&chessBoard[nx][ny]==r)l.push([nx,ny]);else break;}
+        if(l.length>=5){winningCoords=l;return true;} return false;
+    }
+
+    function gameOver(w){ 
+        isGameOver=true; isAIThinking=false; isHoldingPiece=false; 
+        statusText.innerText=w==1?"⚫ 黑棋获胜！":"⚪ AI获胜！"; 
+        statusText.style.color="#d9534f"; canvas.style.cursor="default"; updateUI(); 
+    }
+
+    function undoMove(){
+        // ✅ 修复：AI 推演中悔棋会把棋盘状态弄乱
+        if (isAIThinking) { alert("AI 正在推演中，稍等一下再悔棋"); return; }
+
+        if(moveHistory.length==0||isGameOver){alert("无法悔棋");return;}
+        if(gameMode=='pvp'){
+            let l=moveHistory.pop();
+            removeStone(l.i, l.j, l.color);
+            isBlackTurn = (l.color==1);
+        }else{
+            if(isBlackTurn){
+                if(moveHistory.length<2)return;
+                let a=moveHistory.pop(), b=moveHistory.pop();
+                removeStone(a.i, a.j, a.color);
+                removeStone(b.i, b.j, b.color);
+            } else {
+                // 轮到 AI 时不允许悔棋（保持你原来的规则）
+                return;
+            }
+        }
+        isGameOver=false; winningCoords=[]; updateTurnState(); repaint();
+    }
+
+    function resetGame(){ 
+        moveHistory=[]; winningCoords=[]; 
+        initArray();
+        isBlackTurn=true; isGameOver=false; isAIThinking=false; 
+        updateTurnState(); repaint(); 
+    }
+
+    window.onload=function(){updateTurnState(); repaint();}
+</script>
+</body>
+</html>

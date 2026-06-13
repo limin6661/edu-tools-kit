@@ -1,0 +1,1140 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>⏰ 定时闹钟 - 倒计时</title>
+    <style>
+        :root {
+            --bg: #0f1119;
+            --card-bg: #1a1d28;
+            --surface: #222636;
+            --text: #e8e8f0;
+            --text-secondary: #a0a4b8;
+            --primary: #5b8def;
+            --primary-hover: #7aa5ff;
+            --warning: #f0a840;
+            --danger: #e85545;
+            --danger-hover: #ff6b5b;
+            --success: #4caf84;
+            --border: #2a2e3d;
+            --shadow: 0 4px 24px rgba(0, 0, 0, 0.4);
+            --radius: 16px;
+            --radius-sm: 10px;
+        }
+
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', 'Helvetica Neue', sans-serif;
+            background: var(--bg);
+            background-image:
+                radial-gradient(ellipse at 50% 30%, rgba(91, 141, 239, 0.06) 0%, transparent 70%),
+                radial-gradient(ellipse at 20% 70%, rgba(240, 168, 64, 0.04) 0%, transparent 60%),
+                radial-gradient(ellipse at 80% 60%, rgba(232, 85, 69, 0.03) 0%, transparent 60%);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 16px;
+            transition: background-color 0.5s ease;
+            -webkit-tap-highlight-color: transparent;
+            user-select: none;
+            -webkit-user-select: none;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        body.alarming {
+            animation: alarmBgPulse 0.7s ease-in-out infinite;
+        }
+
+        @keyframes alarmBgPulse {
+            0%,
+            100% {
+                background-color: #0f1119;
+            }
+            25% {
+                background-color: #1f0a0a;
+            }
+            50% {
+                background-color: #2d0808;
+            }
+            75% {
+                background-color: #1f0a0a;
+            }
+        }
+
+        .container {
+            width: 100%;
+            max-width: 520px;
+            background: var(--card-bg);
+            border-radius: 24px;
+            padding: 28px 24px 24px;
+            box-shadow: var(--shadow), 0 0 0 1px var(--border);
+            transition: all 0.4s ease;
+            position: relative;
+            overflow: hidden;
+        }
+
+        .container.alarming-container {
+            animation: containerShake 0.5s ease-in-out infinite;
+            box-shadow: 0 0 60px rgba(232, 85, 69, 0.5), 0 0 0 3px var(--danger);
+        }
+
+        @keyframes containerShake {
+            0%,
+            100% {
+                transform: translateX(0);
+            }
+            10% {
+                transform: translateX(-4px);
+            }
+            20% {
+                transform: translateX(4px);
+            }
+            30% {
+                transform: translateX(-3px);
+            }
+            40% {
+                transform: translateX(3px);
+            }
+            50% {
+                transform: translateX(-2px);
+            }
+            60% {
+                transform: translateX(2px);
+            }
+            70% {
+                transform: translateX(-1px);
+            }
+            80% {
+                transform: translateX(1px);
+            }
+            90% {
+                transform: translateX(0);
+            }
+        }
+
+        .header {
+            text-align: center;
+            margin-bottom: 20px;
+        }
+        .header .icon {
+            font-size: 40px;
+            display: block;
+            margin-bottom: 4px;
+        }
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 700;
+            letter-spacing: -0.02em;
+            color: var(--text);
+        }
+
+        .timer-display-wrapper {
+            position: relative;
+            text-align: center;
+            margin-bottom: 16px;
+            padding: 16px 10px 10px;
+            background: var(--surface);
+            border-radius: var(--radius);
+            border: 2px solid var(--border);
+            transition: all 0.35s ease;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            gap: 6px;
+        }
+        .timer-display-wrapper.warning {
+            border-color: var(--warning);
+            box-shadow: 0 0 20px rgba(240, 168, 64, 0.2);
+        }
+        .timer-display-wrapper.danger {
+            border-color: var(--danger);
+            box-shadow: 0 0 28px rgba(232, 85, 69, 0.35);
+            animation: dangerGlow 0.6s ease-in-out infinite;
+        }
+        @keyframes dangerGlow {
+            0%,
+            100% {
+                box-shadow: 0 0 28px rgba(232, 85, 69, 0.35);
+            }
+            50% {
+                box-shadow: 0 0 44px rgba(232, 85, 69, 0.65);
+            }
+        }
+
+        .timer-label {
+            font-size: 0.8rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+            color: var(--text-secondary);
+            margin-bottom: 2px;
+            font-weight: 500;
+        }
+
+        .timer-digits {
+            font-size: clamp(2.2rem, 8vw, 3.8rem);
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            font-variant-numeric: tabular-nums;
+            font-family: 'SF Mono', 'JetBrains Mono', 'Consolas', 'Menlo', 'PingFang SC', monospace;
+            color: var(--text);
+            transition: color 0.35s ease, transform 0.2s ease;
+            line-height: 1;
+            margin-bottom: 4px;
+        }
+        .timer-digits.warning-text {
+            color: var(--warning);
+        }
+        .timer-digits.danger-text {
+            color: var(--danger);
+            animation: digitPulse 0.5s ease-in-out infinite;
+        }
+        @keyframes digitPulse {
+            0%,
+            100% {
+                transform: scale(1);
+            }
+            50% {
+                transform: scale(1.04);
+            }
+        }
+
+        .clock-container {
+            width: 90px;
+            height: 90px;
+            margin: 0 auto;
+        }
+        .clock-svg {
+            width: 100%;
+            height: 100%;
+            display: block;
+        }
+        .clock-face {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 2;
+        }
+        .clock-tick {
+            stroke: var(--text-secondary);
+            stroke-width: 1.5;
+            stroke-linecap: round;
+        }
+        .clock-hand {
+            transform-origin: 50px 50px;
+            transition: transform 0.2s linear;
+        }
+        .clock-hand.warning-hand {
+            stroke: var(--warning);
+        }
+        .clock-hand.danger-hand {
+            stroke: var(--danger);
+            animation: handPulse 0.6s ease-in-out infinite;
+        }
+        @keyframes handPulse {
+            0%,
+            100% {
+                stroke-width: 3;
+            }
+            50% {
+                stroke-width: 4.5;
+            }
+        }
+        .clock-center {
+            fill: var(--text);
+            transition: fill 0.3s;
+        }
+
+        .progress-wrapper {
+            margin-bottom: 20px;
+            background: var(--surface);
+            border-radius: 20px;
+            height: 8px;
+            overflow: hidden;
+        }
+        .progress-bar {
+            height: 100%;
+            border-radius: 20px;
+            background: var(--primary);
+            transition: width 0.4s linear, background-color 0.5s ease;
+            width: 100%;
+        }
+        .progress-bar.warning-bar {
+            background: var(--warning);
+        }
+        .progress-bar.danger-bar {
+            background: var(--danger);
+        }
+
+        .preset-section {
+            margin-bottom: 16px;
+        }
+        .preset-section .section-label {
+            font-size: 0.75rem;
+            text-transform: uppercase;
+            letter-spacing: 0.06em;
+            color: var(--text-secondary);
+            margin-bottom: 10px;
+            font-weight: 600;
+            text-align: center;
+        }
+        .preset-grid {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 8px;
+        }
+        @media (max-width: 420px) {
+            .preset-grid {
+                grid-template-columns: repeat(3, 1fr);
+                gap: 6px;
+            }
+            .container {
+                padding: 20px 14px 18px;
+                border-radius: 20px;
+            }
+            .timer-digits {
+                font-size: clamp(1.8rem, 7vw, 2.8rem);
+            }
+            .clock-container {
+                width: 70px;
+                height: 70px;
+            }
+        }
+
+        .preset-btn {
+            padding: 12px 6px;
+            border-radius: var(--radius-sm);
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            text-align: center;
+            white-space: nowrap;
+            letter-spacing: -0.01em;
+            position: relative;
+            overflow: hidden;
+        }
+        .preset-btn:hover {
+            background: #2c3142;
+            border-color: var(--primary);
+            transform: translateY(-1px);
+            box-shadow: 0 4px 14px rgba(91, 141, 239, 0.25);
+        }
+        .preset-btn:active {
+            transform: scale(0.96);
+            background: #32384c;
+        }
+        .preset-btn.long-preset {
+            border-color: rgba(240, 168, 64, 0.4);
+        }
+        .preset-btn.long-preset:hover {
+            border-color: var(--warning);
+            box-shadow: 0 4px 14px rgba(240, 168, 64, 0.25);
+        }
+
+        .custom-section {
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+            justify-content: center;
+            background: var(--surface);
+            border-radius: var(--radius-sm);
+            padding: 14px 12px;
+            border: 1px dashed var(--border);
+        }
+        .custom-label {
+            font-size: 0.8rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            white-space: nowrap;
+            margin-right: 2px;
+        }
+        .time-input-group {
+            display: flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .time-input {
+            width: 52px;
+            padding: 10px 4px;
+            text-align: center;
+            font-size: 1rem;
+            font-weight: 700;
+            font-family: 'SF Mono', 'JetBrains Mono', 'Consolas', 'PingFang SC', monospace;
+            border-radius: 8px;
+            border: 1.5px solid var(--border);
+            background: var(--card-bg);
+            color: var(--text);
+            transition: all 0.2s ease;
+            -moz-appearance: textfield;
+            appearance: textfield;
+        }
+        .time-input:focus {
+            outline: none;
+            border-color: var(--primary);
+            box-shadow: 0 0 0 3px rgba(91, 141, 239, 0.15);
+            background: #1e2232;
+        }
+        .time-unit-label {
+            font-size: 0.7rem;
+            color: var(--text-secondary);
+            font-weight: 500;
+            margin-left: 1px;
+            margin-right: 6px;
+            white-space: nowrap;
+        }
+        .btn-custom-start {
+            padding: 10px 18px;
+            border-radius: 8px;
+            border: none;
+            background: var(--primary);
+            color: #fff;
+            cursor: pointer;
+            font-size: 0.85rem;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+            letter-spacing: 0.02em;
+            flex-shrink: 0;
+        }
+        .btn-custom-start:hover {
+            background: var(--primary-hover);
+            box-shadow: 0 4px 16px rgba(91, 141, 239, 0.4);
+            transform: translateY(-1px);
+        }
+        .btn-custom-start:active {
+            transform: scale(0.95);
+        }
+
+        .controls-row {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+        .ctrl-btn {
+            padding: 11px 20px;
+            border-radius: 25px;
+            border: 1.5px solid var(--border);
+            background: var(--surface);
+            color: var(--text);
+            cursor: pointer;
+            font-size: 0.9rem;
+            font-weight: 600;
+            transition: all 0.2s ease;
+            letter-spacing: 0.01em;
+            min-width: 70px;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            justify-content: center;
+        }
+        .ctrl-btn:hover {
+            background: #2c3142;
+            border-color: #555;
+            transform: translateY(-1px);
+        }
+        .ctrl-btn:disabled {
+            opacity: 0.4;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .ctrl-btn.btn-pause {
+            border-color: rgba(240, 168, 64, 0.5);
+        }
+        .ctrl-btn.btn-pause:hover {
+            border-color: var(--warning);
+            box-shadow: 0 4px 14px rgba(240, 168, 64, 0.2);
+        }
+        .ctrl-btn.btn-reset {
+            border-color: rgba(232, 85, 69, 0.4);
+            color: #e8a09a;
+        }
+        .ctrl-btn.btn-reset:hover {
+            border-color: var(--danger);
+            color: var(--danger);
+            box-shadow: 0 4px 14px rgba(232, 85, 69, 0.2);
+        }
+
+        .stop-alarm-overlay {
+            display: none;
+            position: absolute;
+            inset: 0;
+            background: rgba(15, 17, 25, 0.85);
+            border-radius: 24px;
+            z-index: 10;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            gap: 14px;
+            backdrop-filter: blur(4px);
+        }
+        .stop-alarm-overlay.active {
+            display: flex;
+            animation: overlayIn 0.3s ease-out;
+        }
+        @keyframes overlayIn {
+            from {
+                opacity: 0;
+            }
+            to {
+                opacity: 1;
+            }
+        }
+        .stop-alarm-btn {
+            width: 100px;
+            height: 100px;
+            border-radius: 50%;
+            border: none;
+            background: var(--danger);
+            color: #fff;
+            cursor: pointer;
+            font-weight: 700;
+            transition: all 0.2s ease;
+            box-shadow: 0 0 50px rgba(232, 85, 69, 0.7), 0 8px 30px rgba(0, 0, 0, 0.5);
+            animation: stopBtnPulse 0.8s ease-in-out infinite;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+            gap: 2px;
+        }
+        .stop-alarm-btn:hover {
+            background: var(--danger-hover);
+            box-shadow: 0 0 70px rgba(255, 107, 91, 0.9), 0 12px 36px rgba(0, 0, 0, 0.6);
+            transform: scale(1.06);
+        }
+        @keyframes stopBtnPulse {
+            0%,
+            100% {
+                box-shadow: 0 0 50px rgba(232, 85, 69, 0.7), 0 8px 30px rgba(0, 0, 0, 0.5);
+            }
+            50% {
+                box-shadow: 0 0 80px rgba(255, 80, 60, 1), 0 8px 40px rgba(0, 0, 0, 0.7);
+            }
+        }
+        .stop-icon {
+            font-size: 2rem;
+        }
+        .stop-text {
+            font-size: 0.75rem;
+            letter-spacing: 0.04em;
+        }
+        .stop-hint {
+            color: #fff;
+            font-size: 0.85rem;
+            text-align: center;
+            animation: hintFade 1.2s ease-in-out infinite;
+        }
+        @keyframes hintFade {
+            0%,
+            100% {
+                opacity: 0.7;
+            }
+            50% {
+                opacity: 1;
+            }
+        }
+
+        .toast {
+            position: fixed;
+            top: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(-120px);
+            background: #2d323f;
+            color: #fff;
+            padding: 10px 20px;
+            border-radius: 25px;
+            font-size: 0.85rem;
+            font-weight: 600;
+            z-index: 100;
+            transition: transform 0.35s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            box-shadow: 0 8px 30px rgba(0, 0, 0, 0.5);
+            pointer-events: none;
+        }
+        .toast.show {
+            transform: translateX(-50%) translateY(0);
+        }
+    </style>
+</head>
+<body>
+    <div class="container" id="mainContainer">
+        <div class="header">
+            <span class="icon">⏰</span>
+            <h1>倒计时闹钟</h1>
+        </div>
+
+        <div class="timer-display-wrapper" id="timerDisplayWrapper">
+            <div class="timer-label">剩余时间</div>
+            <div class="timer-digits" id="timerDigits">00:00</div>
+            <div class="clock-container">
+                <svg class="clock-svg" id="clockSvg" viewBox="0 0 100 100" width="90" height="90">
+                    <circle cx="50" cy="50" r="46" class="clock-face" />
+                    <g id="clockTicks"></g>
+                    <line id="clockHand" class="clock-hand" x1="50" y1="50" x2="50" y2="18" stroke="#5b8def" stroke-width="3" stroke-linecap="round" />
+                    <circle cx="50" cy="50" r="3.5" class="clock-center" />
+                </svg>
+            </div>
+        </div>
+
+        <div class="progress-wrapper">
+            <div class="progress-bar" id="progressBar" style="width: 100%;"></div>
+        </div>
+
+        <div class="preset-section">
+            <div class="section-label">📋 快速预设</div>
+            <div class="preset-grid">
+                <button class="preset-btn" data-seconds="60">1 分钟</button>
+                <button class="preset-btn" data-seconds="300">5 分钟</button>
+                <button class="preset-btn" data-seconds="600">10 分钟</button>
+                <button class="preset-btn" data-seconds="900">15 分钟</button>
+                <button class="preset-btn" data-seconds="1200">20 分钟</button>
+                <button class="preset-btn" data-seconds="1800">30 分钟</button>
+                <button class="preset-btn long-preset" data-seconds="3600">60 分钟</button>
+                <button class="preset-btn long-preset" data-seconds="7200">2 小时</button>
+            </div>
+        </div>
+
+        <div class="custom-section">
+            <span class="custom-label">⚙️ 自定义：</span>
+            <div class="time-input-group">
+                <input type="number" class="time-input" id="customHours" value="0" min="0" max="99" placeholder="时" inputmode="numeric" aria-label="小时">
+                <span class="time-unit-label">时</span>
+                <input type="number" class="time-input" id="customMinutes" value="0" min="0" max="59" placeholder="分" inputmode="numeric" aria-label="分钟">
+                <span class="time-unit-label">分</span>
+                <input type="number" class="time-input" id="customSeconds" value="0" min="0" max="59" placeholder="秒" inputmode="numeric" aria-label="秒">
+                <span class="time-unit-label">秒</span>
+            </div>
+            <button class="btn-custom-start" id="btnCustomStart">▶ 开始</button>
+        </div>
+
+        <div class="controls-row">
+            <button class="ctrl-btn btn-pause" id="btnPause" disabled>⏯️ 暂停</button>
+            <button class="ctrl-btn btn-reset" id="btnReset" disabled>↺ 重置</button>
+        </div>
+
+        <div class="stop-alarm-overlay" id="stopAlarmOverlay">
+            <button class="stop-alarm-btn" id="btnStopAlarm">
+                <span class="stop-icon">🔔</span>
+                <span class="stop-text">停止</span>
+            </button>
+            <span class="stop-hint">点击按钮停止闹钟（30秒后自动停止）</span>
+        </div>
+    </div>
+
+    <div class="toast" id="toast"></div>
+
+    <script>
+        (function() {
+            const timerDigits = document.getElementById('timerDigits');
+            const timerDisplayWrapper = document.getElementById('timerDisplayWrapper');
+            const progressBar = document.getElementById('progressBar');
+            const mainContainer = document.getElementById('mainContainer');
+            const stopAlarmOverlay = document.getElementById('stopAlarmOverlay');
+            const btnStopAlarm = document.getElementById('btnStopAlarm');
+            const btnPause = document.getElementById('btnPause');
+            const btnReset = document.getElementById('btnReset');
+            const btnCustomStart = document.getElementById('btnCustomStart');
+            const customHoursInput = document.getElementById('customHours');
+            const customMinutesInput = document.getElementById('customMinutes');
+            const customSecondsInput = document.getElementById('customSeconds');
+            const toast = document.getElementById('toast');
+            const presetBtns = document.querySelectorAll('.preset-btn');
+            const clockHand = document.getElementById('clockHand');
+            const clockTicks = document.getElementById('clockTicks');
+
+            function drawClockTicks() {
+                clockTicks.innerHTML = '';
+                for (let i = 0; i < 12; i++) {
+                    const angle = (i * 30 - 90) * Math.PI / 180;
+                    const x1 = 50 + 38 * Math.cos(angle);
+                    const y1 = 50 + 38 * Math.sin(angle);
+                    const x2 = 50 + 44 * Math.cos(angle);
+                    const y2 = 50 + 44 * Math.sin(angle);
+                    const tick = document.createElementNS("http://www.w3.org/2000/svg", "line");
+                    tick.setAttribute("x1", x1);
+                    tick.setAttribute("y1", y1);
+                    tick.setAttribute("x2", x2);
+                    tick.setAttribute("y2", y2);
+                    tick.setAttribute("class", "clock-tick");
+                    tick.setAttribute("stroke", "var(--text-secondary)");
+                    tick.setAttribute("stroke-width", "1.5");
+                    tick.setAttribute("stroke-linecap", "round");
+                    clockTicks.appendChild(tick);
+                }
+            }
+            drawClockTicks();
+
+            function updateClockHand(remainingSec) {
+                if (!clockHand) return;
+                if (totalSeconds <= 0 || remainingSec < 0) {
+                    clockHand.style.transform = 'rotate(0deg)';
+                    clockHand.classList.remove('warning-hand', 'danger-hand');
+                    return;
+                }
+                const elapsed = Math.max(0, totalSeconds - remainingSec);
+                const fraction = Math.min(1, elapsed / totalSeconds);
+                const angle = fraction * 360;
+                clockHand.style.transform = `rotate(${angle}deg)`;
+                clockHand.classList.remove('warning-hand', 'danger-hand');
+                if (remainingSec <= 10 && remainingSec > 0) {
+                    clockHand.classList.add('danger-hand');
+                } else if (remainingSec <= 30 && remainingSec > 10) {
+                    clockHand.classList.add('warning-hand');
+                }
+            }
+
+            let timerState = 'idle';
+            let targetEndTime = null;
+            let totalSeconds = 0;
+            let remainingOnPause = 0;
+            let updateIntervalId = null;
+            let tickIntervalId = null;
+
+            let audioContext = null;
+            let tickAudioContext = null;
+            let alarmDingInterval = null;
+            let alarmCycleInterval = null;
+            let alarmAutoStopTimeout = null;
+            let titleFlashInterval = null;
+
+            function getAudioContext() {
+                if (!audioContext) {
+                    audioContext = new(window.AudioContext || window.webkitAudioContext)();
+                }
+                if (audioContext.state === 'suspended') {
+                    audioContext.resume();
+                }
+                return audioContext;
+            }
+
+            function getTickAudioContext() {
+                if (!tickAudioContext) {
+                    tickAudioContext = new(window.AudioContext || window.webkitAudioContext)();
+                }
+                if (tickAudioContext.state === 'suspended') {
+                    tickAudioContext.resume();
+                }
+                return tickAudioContext;
+            }
+
+            let toastTimeout = null;
+            function showToast(message) {
+                if (toastTimeout) clearTimeout(toastTimeout);
+                toast.textContent = message;
+                toast.classList.add('show');
+                toastTimeout = setTimeout(() => toast.classList.remove('show'), 1800);
+            }
+
+            function formatTime(totalSec) {
+                const sec = Math.max(0, Math.ceil(totalSec));
+                const hours = Math.floor(sec / 3600);
+                const minutes = Math.floor((sec % 3600) / 60);
+                const seconds = sec % 60;
+                if (hours > 0) return `${String(hours).padStart(2, '0')}:${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+                return `${String(minutes).padStart(2, '0')}:${String(seconds).padStart(2, '0')}`;
+            }
+
+            function updateDisplay(remainingSec) {
+                const sec = Math.max(0, Math.ceil(remainingSec));
+                timerDigits.textContent = formatTime(sec);
+                let progressPercent = 100;
+                if (totalSeconds > 0) progressPercent = Math.max(0, Math.min(100, (sec / totalSeconds) * 100));
+                progressBar.style.width = progressPercent + '%';
+                timerDigits.classList.remove('warning-text', 'danger-text');
+                timerDisplayWrapper.classList.remove('warning', 'danger');
+                progressBar.classList.remove('warning-bar', 'danger-bar');
+                if (timerState === 'running' || timerState === 'paused') {
+                    if (sec <= 10 && sec > 0) {
+                        timerDigits.classList.add('danger-text');
+                        timerDisplayWrapper.classList.add('danger');
+                        progressBar.classList.add('danger-bar');
+                    } else if (sec <= 30 && sec > 10) {
+                        timerDigits.classList.add('warning-text');
+                        timerDisplayWrapper.classList.add('warning');
+                        progressBar.classList.add('warning-bar');
+                    }
+                }
+                updateClockHand(sec);
+                if (timerState === 'running') btnPause.innerHTML = '⏯️ 暂停';
+                else if (timerState === 'paused') btnPause.innerHTML = '▶️ 继续';
+            }
+
+            function updateButtonsForState() {
+                switch (timerState) {
+                    case 'idle': btnPause.disabled = true; btnReset.disabled = true; btnPause.innerHTML = '⏯️ 暂停'; break;
+                    case 'running': btnPause.disabled = false; btnReset.disabled = false; btnPause.innerHTML = '⏯️ 暂停'; break;
+                    case 'paused': btnPause.disabled = false; btnReset.disabled = false; btnPause.innerHTML = '▶️ 继续'; break;
+                    case 'alarming': btnPause.disabled = true; btnReset.disabled = true; break;
+                }
+            }
+
+            function playTickSound() {
+                try {
+                    const ctx = getTickAudioContext();
+                    const now = ctx.currentTime;
+                    const osc = ctx.createOscillator();
+                    const gain = ctx.createGain();
+                    osc.type = 'square';
+                    osc.frequency.setValueAtTime(600, now);
+                    gain.gain.setValueAtTime(0.35, now);
+                    gain.gain.exponentialRampToValueAtTime(0.001, now + 0.07);
+                    osc.connect(gain);
+                    gain.connect(ctx.destination);
+                    osc.start(now);
+                    osc.stop(now + 0.08);
+                    osc.onended = () => { osc.disconnect(); gain.disconnect(); };
+                } catch (e) {}
+            }
+
+            function startTickSound() {
+                stopTickSound();
+                tickIntervalId = setInterval(() => {
+                    const remaining = getRemainingSeconds();
+                    if (remaining <= 10 && remaining > 0 && timerState === 'running') playTickSound();
+                    else if (remaining <= 0) stopTickSound();
+                }, 1000);
+            }
+            function stopTickSound() {
+                if (tickIntervalId) { clearInterval(tickIntervalId); tickIntervalId = null; }
+            }
+
+            function getRemainingSeconds() {
+                if (timerState === 'paused') return remainingOnPause;
+                if (timerState === 'running' && targetEndTime) return Math.max(0, (targetEndTime - Date.now()) / 1000);
+                if (timerState === 'alarming') return 0;
+                return 0;
+            }
+
+            function triggerAlarm() {
+                if (timerState === 'alarming') return;
+                timerState = 'alarming';
+                stopTickSound();
+                if (updateIntervalId) { clearInterval(updateIntervalId); updateIntervalId = null; }
+                timerDigits.textContent = '00:00';
+                timerDigits.classList.add('danger-text');
+                timerDisplayWrapper.classList.add('danger');
+                progressBar.style.width = '0%';
+                progressBar.classList.add('danger-bar');
+                updateClockHand(0);
+                updateButtonsForState();
+                stopAlarmOverlay.classList.add('active');
+                mainContainer.classList.add('alarming-container');
+                document.body.classList.add('alarming');
+                startAlarmSound();
+                if ('vibrate' in navigator) {
+                    try { navigator.vibrate([400, 200, 400, 200, 400, 200, 600, 300, 400, 200, 400, 200, 600, 300]); } catch (e) {}
+                }
+                startTitleFlash();
+                showToast('🔔 时间到！下课铃响了！');
+            }
+
+            function startTitleFlash() {
+                if (titleFlashInterval) clearInterval(titleFlashInterval);
+                let flash = true;
+                titleFlashInterval = setInterval(() => {
+                    document.title = flash ? '🔔 时间到！下课铃！' : '⏰ 快来看！';
+                    flash = !flash;
+                }, 600);
+            }
+            function stopTitleFlash() {
+                if (titleFlashInterval) { clearInterval(titleFlashInterval); document.title = '⏰ 定时闹钟 - 倒计时'; titleFlashInterval = null; }
+            }
+
+            // 清脆的金属铃铛声（类似下课铃的“叮铃铃”）
+            function playBell() {
+                try {
+                    const ctx = getAudioContext();
+                    const now = ctx.currentTime;
+                    // 4个泛音频率，模拟金属铃铛
+                    const freqs = [1100, 2200, 3300, 4400];
+                    const gains = [0.5, 0.25, 0.15, 0.08];
+                    const masterGain = ctx.createGain();
+                    masterGain.gain.setValueAtTime(1.0, now);
+                    masterGain.connect(ctx.destination);
+                    const oscillators = [];
+                    freqs.forEach((freq, idx) => {
+                        const osc = ctx.createOscillator();
+                        const gain = ctx.createGain();
+                        osc.type = 'sine';
+                        osc.frequency.setValueAtTime(freq, now);
+                        gain.gain.setValueAtTime(gains[idx], now);
+                        gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+                        osc.connect(gain);
+                        gain.connect(masterGain);
+                        osc.start(now);
+                        osc.stop(now + 0.12);
+                        oscillators.push({ osc, gain });
+                    });
+                    // 清理
+                    setTimeout(() => {
+                        oscillators.forEach(({ osc, gain }) => {
+                            try { osc.disconnect(); gain.disconnect(); } catch (e) {}
+                        });
+                        try { masterGain.disconnect(); } catch (e) {}
+                    }, 200);
+                } catch (e) {}
+            }
+
+            function startAlarmSound() {
+                stopAlarmSound();
+                const dingCount = 16;          // 2秒内响16下
+                const dingInterval = 125;      // 每125ms响一次
+                const cycleDuration = 3000;    // 3秒循环（响2秒+停1秒）
+                const totalAlarmDuration = 30000;
+
+                function playDingSequence() {
+                    let dingsPlayed = 0;
+                    const id = setInterval(() => {
+                        if (timerState !== 'alarming') {
+                            clearInterval(id);
+                            return;
+                        }
+                        playBell();
+                        dingsPlayed++;
+                        if (dingsPlayed >= dingCount) {
+                            clearInterval(id);
+                        }
+                    }, dingInterval);
+                    alarmDingInterval = id;
+                }
+
+                playDingSequence();
+                alarmCycleInterval = setInterval(() => {
+                    if (timerState !== 'alarming') {
+                        clearInterval(alarmCycleInterval);
+                        return;
+                    }
+                    playDingSequence();
+                }, cycleDuration);
+
+                alarmAutoStopTimeout = setTimeout(() => {
+                    if (timerState === 'alarming') stopAlarm();
+                }, totalAlarmDuration);
+            }
+
+            function stopAlarmSound() {
+                if (alarmCycleInterval) { clearInterval(alarmCycleInterval); alarmCycleInterval = null; }
+                if (alarmDingInterval) { clearInterval(alarmDingInterval); alarmDingInterval = null; }
+                if (alarmAutoStopTimeout) { clearTimeout(alarmAutoStopTimeout); alarmAutoStopTimeout = null; }
+                if ('vibrate' in navigator) { try { navigator.vibrate(0); } catch (e) {} }
+            }
+
+            function stopAlarm() {
+                if (timerState !== 'alarming') return;
+                stopAlarmSound();
+                stopTitleFlash();
+                timerState = 'idle';
+                targetEndTime = null;
+                totalSeconds = 0;
+                remainingOnPause = 0;
+                stopTickSound();
+                stopAlarmOverlay.classList.remove('active');
+                mainContainer.classList.remove('alarming-container');
+                document.body.classList.remove('alarming');
+                timerDigits.classList.remove('warning-text', 'danger-text');
+                timerDisplayWrapper.classList.remove('warning', 'danger');
+                progressBar.classList.remove('warning-bar', 'danger-bar');
+                progressBar.style.width = '100%';
+                timerDigits.textContent = '00:00';
+                updateClockHand(0);
+                updateButtonsForState();
+                if (updateIntervalId) { clearInterval(updateIntervalId); updateIntervalId = null; }
+                showToast('闹钟已停止');
+            }
+
+            function startCountdown(seconds) {
+                if (seconds <= 0) { showToast('⚠️ 请设置至少1秒的时间'); return; }
+                if (timerState === 'alarming') {
+                    stopAlarmSound(); stopTitleFlash(); stopAlarmOverlay.classList.remove('active');
+                    mainContainer.classList.remove('alarming-container'); document.body.classList.remove('alarming');
+                }
+                if (updateIntervalId) { clearInterval(updateIntervalId); updateIntervalId = null; }
+                stopTickSound();
+                getAudioContext(); getTickAudioContext();
+                totalSeconds = seconds;
+                targetEndTime = Date.now() + seconds * 1000;
+                timerState = 'running';
+                remainingOnPause = 0;
+                updateDisplay(seconds);
+                updateButtonsForState();
+                timerDigits.classList.remove('warning-text', 'danger-text');
+                timerDisplayWrapper.classList.remove('warning', 'danger');
+                progressBar.classList.remove('warning-bar', 'danger-bar');
+                progressBar.style.width = '100%';
+                updateIntervalId = setInterval(() => {
+                    if (timerState === 'running') {
+                        const remaining = getRemainingSeconds();
+                        updateDisplay(remaining);
+                        if (remaining <= 10 && remaining > 0 && !tickIntervalId) startTickSound();
+                        if (remaining > 10 && tickIntervalId) stopTickSound();
+                        if (remaining <= 0) {
+                            clearInterval(updateIntervalId);
+                            updateIntervalId = null;
+                            stopTickSound();
+                            updateDisplay(0);
+                            triggerAlarm();
+                        }
+                    } else if (timerState === 'paused') {
+                        updateDisplay(remainingOnPause);
+                    } else if (timerState === 'idle' || timerState === 'alarming') {
+                        clearInterval(updateIntervalId);
+                        updateIntervalId = null;
+                        stopTickSound();
+                    }
+                }, 100);
+                showToast(`✅ 倒计时 ${formatTime(seconds)} 开始！`);
+            }
+
+            function togglePause() {
+                if (timerState === 'running') {
+                    remainingOnPause = getRemainingSeconds();
+                    timerState = 'paused';
+                    targetEndTime = null;
+                    stopTickSound();
+                    updateDisplay(remainingOnPause);
+                    updateButtonsForState();
+                    showToast('⏸️ 已暂停');
+                } else if (timerState === 'paused') {
+                    if (remainingOnPause <= 0) {
+                        timerState = 'idle'; remainingOnPause = 0; targetEndTime = null; totalSeconds = 0;
+                        updateDisplay(0); updateButtonsForState(); stopTickSound();
+                        showToast('时间已到，请重新设置'); return;
+                    }
+                    totalSeconds = Math.max(totalSeconds, remainingOnPause);
+                    targetEndTime = Date.now() + remainingOnPause * 1000;
+                    timerState = 'running';
+                    remainingOnPause = 0;
+                    updateButtonsForState();
+                    const rem = getRemainingSeconds();
+                    if (rem <= 10 && rem > 0) startTickSound();
+                    showToast('▶️ 继续倒计时');
+                }
+            }
+
+            function resetCountdown() {
+                if (timerState === 'alarming') stopAlarm();
+                stopTickSound();
+                if (updateIntervalId) { clearInterval(updateIntervalId); updateIntervalId = null; }
+                timerState = 'idle';
+                targetEndTime = null; totalSeconds = 0; remainingOnPause = 0;
+                updateDisplay(0);
+                progressBar.style.width = '100%';
+                timerDigits.classList.remove('warning-text', 'danger-text');
+                timerDisplayWrapper.classList.remove('warning', 'danger');
+                progressBar.classList.remove('warning-bar', 'danger-bar');
+                updateClockHand(0);
+                updateButtonsForState();
+                stopAlarmOverlay.classList.remove('active');
+                mainContainer.classList.remove('alarming-container');
+                document.body.classList.remove('alarming');
+                stopTitleFlash();
+                showToast('↺ 已重置');
+            }
+
+            presetBtns.forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const seconds = parseInt(btn.getAttribute('data-seconds'), 10);
+                    if (isNaN(seconds) || seconds <= 0) return;
+                    if (timerState === 'alarming') {
+                        stopAlarmSound(); stopTitleFlash(); stopAlarmOverlay.classList.remove('active');
+                        mainContainer.classList.remove('alarming-container'); document.body.classList.remove('alarming');
+                        timerState = 'idle';
+                    }
+                    if (updateIntervalId) { clearInterval(updateIntervalId); updateIntervalId = null; }
+                    stopTickSound();
+                    startCountdown(seconds);
+                });
+            });
+
+            btnCustomStart.addEventListener('click', () => {
+                const h = parseInt(customHoursInput.value, 10) || 0;
+                const m = parseInt(customMinutesInput.value, 10) || 0;
+                const s = parseInt(customSecondsInput.value, 10) || 0;
+                const totalSec = h * 3600 + m * 60 + s;
+                if (totalSec <= 0) {
+                    showToast('⚠️ 请设置至少1秒的时间');
+                    customSecondsInput.focus();
+                    customSecondsInput.style.borderColor = 'var(--danger)';
+                    setTimeout(() => customSecondsInput.style.borderColor = 'var(--border)', 1500);
+                    return;
+                }
+                if (totalSec > 356400) { showToast('⚠️ 时间太长啦，最多99小时'); return; }
+                if (timerState === 'alarming') {
+                    stopAlarmSound(); stopTitleFlash(); stopAlarmOverlay.classList.remove('active');
+                    mainContainer.classList.remove('alarming-container'); document.body.classList.remove('alarming');
+                    timerState = 'idle';
+                }
+                if (updateIntervalId) { clearInterval(updateIntervalId); updateIntervalId = null; }
+                stopTickSound();
+                startCountdown(totalSec);
+            });
+
+            btnPause.addEventListener('click', togglePause);
+            btnReset.addEventListener('click', resetCountdown);
+            btnStopAlarm.addEventListener('click', stopAlarm);
+
+            [customHoursInput, customMinutesInput, customSecondsInput].forEach(input => {
+                input.addEventListener('keydown', (e) => { if (e.key === 'Enter') { e.preventDefault(); btnCustomStart.click(); } });
+                input.addEventListener('input', () => {
+                    let val = parseInt(input.value, 10);
+                    if (isNaN(val) || val < 0) input.value = '0';
+                    if (input === customHoursInput && val > 99) input.value = '99';
+                    if ((input === customMinutesInput || input === customSecondsInput) && val > 59) input.value = '59';
+                });
+                input.addEventListener('focus', () => input.select());
+            });
+
+            document.addEventListener('keydown', (e) => {
+                const tag = document.activeElement.tagName.toLowerCase();
+                if (tag === 'input' || tag === 'textarea') return;
+                switch (e.key.toLowerCase()) {
+                    case ' ': e.preventDefault(); if (timerState === 'alarming') stopAlarm(); else if (timerState === 'running' || timerState === 'paused') togglePause(); break;
+                    case 'escape': e.preventDefault(); if (timerState === 'alarming') stopAlarm(); else resetCountdown(); break;
+                    case 'r': if (!e.ctrlKey && !e.metaKey) { e.preventDefault(); resetCountdown(); } break;
+                }
+            });
+
+            document.addEventListener('visibilitychange', () => {
+                if (document.hidden && timerState === 'alarming') { if (!titleFlashInterval) startTitleFlash(); }
+                if (!document.hidden && timerState === 'running') {
+                    const remaining = getRemainingSeconds();
+                    updateDisplay(remaining);
+                    if (remaining <= 0 && timerState === 'running') triggerAlarm();
+                }
+            });
+
+            window.addEventListener('beforeunload', (e) => {
+                if (timerState === 'running' || timerState === 'alarming') {
+                    e.preventDefault();
+                    e.returnValue = '您有正在运行的倒计时，确定离开吗？';
+                    return e.returnValue;
+                }
+            });
+
+            function init() {
+                updateDisplay(0);
+                updateButtonsForState();
+                progressBar.style.width = '100%';
+                try {
+                    audioContext = new(window.AudioContext || window.webkitAudioContext)();
+                    tickAudioContext = new(window.AudioContext || window.webkitAudioContext)();
+                } catch (e) {}
+                console.log('⏰ 倒计时闹钟已就绪 (学校下课铃 2秒16响 + 钟表转动)');
+            }
+            init();
+        })();
+    </script>
+</body>
+</html>
