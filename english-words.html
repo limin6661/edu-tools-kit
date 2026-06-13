@@ -1,0 +1,1926 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>英语单词练习 - 听写/拼写/选择</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Microsoft YaHei', 'SimSun', sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 15px;
+            font-size: 14px;
+        }
+
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+
+        h1 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 5px;
+            font-size: 1.5em;
+        }
+
+        .subtitle {
+            text-align: center;
+            color: #888;
+            margin-bottom: 15px;
+            font-size: 12px;
+        }
+
+        /* 阶段指示器 */
+        .stage-indicator {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+        }
+
+        .stage-badge {
+            padding: 5px 15px;
+            border-radius: 15px;
+            font-size: 12px;
+            font-weight: bold;
+            background: #eee;
+            color: #999;
+        }
+
+        .stage-badge.active {
+            background: #4CAF50;
+            color: white;
+        }
+
+        .stage-badge.completed {
+            background: #2196F3;
+            color: white;
+        }
+
+        /* 控制按钮 */
+        .controls {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        button {
+            padding: 8px 18px;
+            font-size: 13px;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            transition: all 0.2s;
+            font-weight: bold;
+        }
+
+        button:disabled {
+            opacity: 0.5;
+            cursor: not-allowed;
+        }
+
+        .btn-primary { background: #4CAF50; color: white; }
+        .btn-primary:hover:not(:disabled) { background: #43A047; }
+        .btn-secondary { background: #2196F3; color: white; }
+        .btn-secondary:hover:not(:disabled) { background: #1E88E5; }
+        .btn-warning { background: #FF9800; color: white; }
+        .btn-warning:hover:not(:disabled) { background: #F57C00; }
+        .btn-danger { background: #f44336; color: white; }
+        .btn-danger:hover:not(:disabled) { background: #D32F2F; }
+        .btn-history { background: #9C27B0; color: white; }
+        .btn-history:hover:not(:disabled) { background: #7B1FA2; }
+
+        /* 配置面板 */
+        .config-panel {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 12px 15px;
+            margin-bottom: 15px;
+        }
+
+        .config-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 10px 18px;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .config-row:last-child { margin-bottom: 0; }
+
+        .config-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .config-label {
+            font-size: 12px;
+            font-weight: bold;
+            color: #555;
+        }
+
+        .config-group select,
+        .config-group input[type="number"] {
+            padding: 5px 8px;
+            border: 1px solid #ccc;
+            border-radius: 4px;
+            font-size: 13px;
+            background: white;
+            transition: border-color 0.2s;
+        }
+
+        .config-group select:focus,
+        .config-group input[type="number"]:focus {
+            outline: none;
+            border-color: #4CAF50;
+        }
+
+        .config-group label.mode-label {
+            display: inline-flex;
+            align-items: center;
+            gap: 3px;
+            font-size: 12px;
+            color: #444;
+            cursor: pointer;
+            padding: 4px 10px;
+            border-radius: 4px;
+            border: 1px solid #ddd;
+            background: white;
+            transition: all 0.2s;
+            user-select: none;
+        }
+
+        .config-group label.mode-label:hover {
+            border-color: #4CAF50;
+        }
+
+        .config-group label.mode-label input[type="radio"] {
+            margin: 0;
+            cursor: pointer;
+            accent-color: #4CAF50;
+        }
+
+        .config-group label.mode-label:has(input:checked) {
+            background: #E8F5E9;
+            border-color: #4CAF50;
+            color: #2E7D32;
+        }
+
+        /* 计时器 */
+        .timer-bar {
+            display: none;
+            background: linear-gradient(135deg, #FF9800, #FFC107);
+            color: white;
+            padding: 10px 20px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 12px;
+            font-size: 16px;
+            font-weight: bold;
+            box-shadow: 0 2px 6px rgba(255,152,0,0.3);
+        }
+
+        .timer-bar.show { display: block; }
+
+        .timer-bar.warning {
+            background: linear-gradient(135deg, #f44336, #FF5252);
+            animation: timerPulse 1s ease-in-out infinite;
+        }
+
+        @keyframes timerPulse {
+            0%, 100% { transform: scale(1); }
+            50% { transform: scale(1.02); }
+        }
+
+        .timer-time {
+            font-size: 24px;
+            font-family: 'Consolas', 'Courier New', monospace;
+            letter-spacing: 2px;
+        }
+
+        /* 单题练习区（拼写/听写/选择题共用） */
+        .practice-area {
+            display: none;
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 30px 20px;
+            margin-bottom: 15px;
+            text-align: center;
+        }
+
+        .practice-area.show { display: block; }
+
+        .progress-info {
+            font-size: 12px;
+            color: #888;
+            margin-bottom: 15px;
+        }
+
+        .question-prompt {
+            font-size: 16px;
+            color: #555;
+            margin-bottom: 8px;
+        }
+
+        .word-display {
+            font-size: 48px;
+            font-weight: bold;
+            color: #333;
+            margin: 15px 0;
+            font-family: 'Georgia', 'Times New Roman', serif;
+            letter-spacing: 1px;
+        }
+
+        .word-display.chinese {
+            font-size: 40px;
+            font-family: 'Microsoft YaHei', sans-serif;
+        }
+
+        .word-hint {
+            font-size: 13px;
+            color: #999;
+            margin-bottom: 15px;
+        }
+
+        .word-hint .letter-count {
+            font-family: 'Consolas', monospace;
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .answer-input-large {
+            width: 280px;
+            max-width: 90%;
+            padding: 12px 16px;
+            font-size: 20px;
+            text-align: center;
+            border: 2px solid #ccc;
+            border-radius: 6px;
+            font-family: 'Georgia', serif;
+            transition: all 0.2s;
+        }
+
+        .answer-input-large:focus {
+            outline: none;
+            border-color: #4CAF50;
+            box-shadow: 0 0 6px rgba(76,175,80,0.3);
+        }
+
+        .answer-input-large.correct {
+            border-color: #4CAF50;
+            background: #E8F5E9;
+        }
+
+        .answer-input-large.wrong {
+            border-color: #f44336;
+            background: #FFEBEE;
+        }
+
+        .speak-btn {
+            background: #2196F3;
+            color: white;
+            border: none;
+            border-radius: 50%;
+            width: 56px;
+            height: 56px;
+            font-size: 22px;
+            cursor: pointer;
+            margin: 10px;
+            transition: all 0.2s;
+            box-shadow: 0 2px 6px rgba(33,150,243,0.3);
+        }
+
+        .speak-btn:hover { background: #1E88E5; transform: scale(1.05); }
+
+        .choice-options {
+            display: grid;
+            grid-template-columns: repeat(2, 1fr);
+            gap: 12px;
+            max-width: 500px;
+            margin: 20px auto;
+        }
+
+        .choice-btn {
+            padding: 14px 18px;
+            font-size: 16px;
+            background: white;
+            color: #333;
+            border: 2px solid #ccc;
+            border-radius: 8px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-align: center;
+        }
+
+        .choice-btn:hover:not(:disabled) {
+            border-color: #4CAF50;
+            background: #f5f5f5;
+        }
+
+        .choice-btn.correct {
+            background: #E8F5E9;
+            border-color: #4CAF50;
+            color: #2E7D32;
+            font-weight: bold;
+        }
+
+        .choice-btn.wrong {
+            background: #FFEBEE;
+            border-color: #f44336;
+            color: #c62828;
+        }
+
+        .choice-btn:disabled { cursor: not-allowed; opacity: 0.85; }
+
+        .feedback {
+            margin-top: 18px;
+            font-size: 15px;
+            min-height: 24px;
+        }
+
+        .feedback.correct { color: #4CAF50; font-weight: bold; }
+        .feedback.wrong { color: #f44336; font-weight: bold; }
+
+        .feedback .correct-word {
+            font-family: 'Georgia', serif;
+            color: #2E7D32;
+            font-size: 18px;
+        }
+
+        /* 选择题的英文显示（看英文选中文） */
+        .word-display.english {
+            font-size: 40px;
+        }
+
+        /* 结果面板 */
+        .result-panel {
+            display: none;
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .result-panel.show { display: block; }
+
+        .result-panel h2 {
+            text-align: center;
+            color: #333;
+            margin-bottom: 12px;
+            font-size: 18px;
+        }
+
+        .result-summary {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 12px;
+        }
+
+        .summary-item {
+            text-align: center;
+            padding: 10px;
+            background: white;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+        }
+
+        .summary-number {
+            font-size: 28px;
+            font-weight: bold;
+            margin-bottom: 3px;
+        }
+
+        .summary-label {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .summary-correct .summary-number { color: #4CAF50; }
+        .summary-wrong .summary-number { color: #f44336; }
+        .summary-unanswered .summary-number { color: #FF9800; }
+        .summary-score .summary-number { color: #2196F3; }
+
+        .result-detail {
+            background: white;
+            padding: 10px;
+            border-radius: 6px;
+            border: 1px solid #e0e0e0;
+            margin-top: 10px;
+        }
+
+        .result-detail h3 {
+            color: #333;
+            margin-bottom: 6px;
+            font-size: 14px;
+        }
+
+        .result-detail p {
+            color: #666;
+            font-size: 12px;
+            line-height: 1.5;
+        }
+
+        /* 错题网格 */
+        .wrong-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+            gap: 8px;
+            margin-top: 10px;
+        }
+
+        .wrong-card {
+            background: #FFEBEE;
+            border: 1px solid #f44336;
+            border-radius: 6px;
+            padding: 10px;
+            font-size: 13px;
+        }
+
+        .wrong-card .wc-en {
+            font-family: 'Georgia', serif;
+            font-weight: bold;
+            color: #c62828;
+            font-size: 15px;
+        }
+
+        .wrong-card .wc-cn {
+            color: #333;
+            margin: 4px 0;
+        }
+
+        .wrong-card .wc-ans {
+            font-size: 11px;
+            color: #666;
+        }
+
+        .wrong-card .wc-ans .right {
+            color: #4CAF50;
+            font-weight: bold;
+        }
+
+        .wrong-card .wc-ans .mine {
+            color: #f44336;
+            text-decoration: line-through;
+        }
+
+        /* 完成庆祝 */
+        .celebration {
+            display: none;
+            background: linear-gradient(135deg, #4CAF50, #8BC34A);
+            color: white;
+            padding: 25px;
+            border-radius: 8px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .celebration.show {
+            display: block;
+            animation: celebrate 0.5s ease;
+        }
+
+        @keyframes celebrate {
+            0% { transform: scale(0.8); opacity: 0; }
+            100% { transform: scale(1); opacity: 1; }
+        }
+
+        .celebration h2 {
+            font-size: 22px;
+            margin-bottom: 10px;
+        }
+
+        .celebration p {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        /* 历史记录模态框 */
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal.show { display: flex; }
+
+        .modal-content {
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            max-width: 700px;
+            max-height: 80vh;
+            overflow-y: auto;
+            width: 90%;
+        }
+
+        .modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+            border-bottom: 1px solid #e0e0e0;
+        }
+
+        .modal-header h2 { color: #333; font-size: 18px; }
+
+        .modal-close {
+            background: none;
+            border: none;
+            font-size: 22px;
+            cursor: pointer;
+            color: #999;
+            padding: 0;
+        }
+
+        .history-item {
+            background: #f9f9f9;
+            border: 1px solid #e0e0e0;
+            border-radius: 6px;
+            padding: 12px;
+            margin-bottom: 10px;
+        }
+
+        .history-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 8px;
+        }
+
+        .history-date { font-weight: bold; color: #333; font-size: 13px; }
+        .history-score { font-size: 16px; font-weight: bold; }
+
+        .history-stats {
+            display: flex;
+            gap: 15px;
+            font-size: 12px;
+            color: #666;
+            flex-wrap: wrap;
+        }
+
+        .history-wrong-list {
+            margin-top: 8px;
+            padding-top: 8px;
+            border-top: 1px solid #e0e0e0;
+        }
+
+        .history-wrong-list h4 {
+            color: #f44336;
+            margin-bottom: 5px;
+            font-size: 12px;
+        }
+
+        .wrong-word {
+            font-size: 11px;
+            color: #666;
+            padding: 3px 0;
+        }
+
+        .wrong-word span { color: #f44336; }
+
+        .no-history {
+            text-align: center;
+            color: #999;
+            padding: 30px;
+        }
+
+        /* 错题本面板 */
+        .wordbook-panel {
+            display: none;
+            background: #FFF3E0;
+            border: 1px solid #FF9800;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .wordbook-panel.show { display: block; }
+
+        .wordbook-panel h2 {
+            color: #E65100;
+            margin-bottom: 10px;
+            text-align: center;
+            font-size: 16px;
+        }
+
+        .wordbook-info {
+            text-align: center;
+            color: #666;
+            margin-bottom: 12px;
+            font-size: 13px;
+        }
+
+        /* ========== 打印样式 ========== */
+        @media print {
+            body {
+                background: white;
+                padding: 0;
+                font-size: 12px;
+            }
+
+            .container {
+                box-shadow: none;
+                padding: 10px;
+                max-width: 100%;
+            }
+
+            h1 { font-size: 18px; margin-bottom: 3px; }
+            .subtitle { margin-bottom: 10px; font-size: 11px; }
+
+            .stage-indicator,
+            .controls,
+            .result-panel,
+            .config-panel,
+            .timer-bar,
+            .practice-area,
+            .celebration,
+            .modal,
+            .wordbook-panel {
+                display: none !important;
+            }
+
+            /* 打印试卷专用区 */
+            #paperPrintArea {
+                display: block !important;
+            }
+
+            @page {
+                size: A4;
+                margin: 10mm;
+            }
+        }
+
+        /* 屏幕下试卷打印区隐藏 */
+        #paperPrintArea {
+            display: none;
+        }
+
+        /* 响应式 */
+        @media (max-width: 768px) {
+            .result-summary {
+                grid-template-columns: repeat(2, 1fr);
+            }
+
+            .controls {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            button { width: 100%; }
+
+            .config-row {
+                flex-direction: column;
+                align-items: stretch;
+            }
+
+            .config-group {
+                justify-content: flex-start;
+            }
+
+            .word-display { font-size: 36px; }
+            .word-display.chinese { font-size: 30px; }
+
+            .answer-input-large { width: 90%; font-size: 18px; }
+
+            .choice-options {
+                grid-template-columns: 1fr;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 小学英语单词练习</h1>
+        <p class="subtitle" id="subtitle">看中文拼英文 · 看英文选中文 · 听写训练 | 三~六年级词汇</p>
+
+        <!-- 配置面板：年级 / 模式 / 题量 / 计时 -->
+        <div class="config-panel" id="configPanel">
+            <div class="config-row">
+                <div class="config-group">
+                    <span class="config-label">🎓 年级：</span>
+                    <select id="gradeSelect" onchange="onGradeChange()">
+                        <option value="3">三年级</option>
+                        <option value="4">四年级</option>
+                        <option value="5">五年级</option>
+                        <option value="6">六年级（小升初）</option>
+                    </select>
+                </div>
+
+                <div class="config-group">
+                    <span class="config-label">📊 词汇范围：</span>
+                    <select id="rangeSelect" onchange="onRangeChange()">
+                        <option value="current">仅本级词汇</option>
+                        <option value="cumulative">本级及以下（累计）</option>
+                        <option value="all">全部词汇</option>
+                    </select>
+                </div>
+
+                <div class="config-group">
+                    <span class="config-label">🔢 题量：</span>
+                    <select id="countSelect">
+                        <option value="20" selected>20 道</option>
+                        <option value="50">50 道</option>
+                        <option value="100">100 道</option>
+                    </select>
+                </div>
+            </div>
+
+            <div class="config-row">
+                <div class="config-group">
+                    <span class="config-label">🎯 练习模式：</span>
+                    <label class="mode-label"><input type="radio" name="mode" value="spell" checked> ✍️ 看中拼英</label>
+                    <label class="mode-label"><input type="radio" name="mode" value="choice"> 📖 看英选中</label>
+                    <label class="mode-label"><input type="radio" name="mode" value="dictation"> 🔊 听写</label>
+                </div>
+            </div>
+
+            <div class="config-row">
+                <div class="config-group">
+                    <span class="config-label">⏱️ 计时模式：</span>
+                    <label class="mode-label"><input type="checkbox" id="timerEnable" onchange="onTimerToggle()"> 开启倒计时</label>
+                    <select id="timerMinutes" style="display:none;">
+                        <option value="5">5 分钟</option>
+                        <option value="10" selected>10 分钟</option>
+                        <option value="15">15 分钟</option>
+                    </select>
+                </div>
+                <div class="config-group">
+                    <span class="config-label">🔁 错题重练：</span>
+                    <label class="mode-label"><input type="checkbox" id="wrongOnly"> 仅练错题本</label>
+                </div>
+            </div>
+        </div>
+
+        <!-- 倒计时显示 -->
+        <div class="timer-bar" id="timerBar">
+            ⏱️ 剩余时间：<span class="timer-time" id="timerTime">10:00</span>
+        </div>
+
+        <!-- 阶段指示器 -->
+        <div class="stage-indicator">
+            <span class="stage-badge active" id="stage1">1. 练习</span>
+            <span class="stage-badge" id="stage2">2. 结果</span>
+            <span class="stage-badge" id="stage3">3. 错题</span>
+        </div>
+
+        <!-- 控制按钮 -->
+        <div class="controls">
+            <button class="btn-primary" id="btnNew" onclick="startNewPractice()">🔄 开始练习</button>
+            <button class="btn-secondary" id="btnNext" onclick="checkAndNext()" style="display:none;">✅ 下一题 (Enter)</button>
+            <button class="btn-warning" id="btnPracticeWrong" onclick="practiceWrongOnly()" style="display:none;">🔁 错题重练</button>
+            <button class="btn-history" onclick="showHistory()">📚 历史</button>
+            <button class="btn-warning" onclick="showWordbook()">📒 错题本</button>
+            <button class="btn-secondary" onclick="exportWrongWords()">📤 导出错词CSV</button>
+            <button class="btn-secondary" onclick="exportPaper()">🖨️ 打印试卷</button>
+        </div>
+
+        <!-- 单题练习区 -->
+        <div class="practice-area" id="practiceArea">
+            <div class="progress-info" id="progressInfo">第 1 / 20 题 · 已对 0 题</div>
+            <div class="question-prompt" id="questionPrompt">请根据中文写出英文单词</div>
+            <div class="word-display" id="wordDisplay">apple</div>
+            <div class="word-hint" id="wordHint"></div>
+            <input type="text" class="answer-input-large" id="answerInput" placeholder="在此输入英文..." autocomplete="off" autocapitalize="off" spellcheck="false">
+            <button class="speak-btn" id="speakBtn" onclick="speakCurrentWord()" style="display:none;" title="朗读单词">🔊</button>
+            <div class="choice-options" id="choiceOptions" style="display:none;"></div>
+            <div class="feedback" id="feedback"></div>
+        </div>
+
+        <!-- 结果面板 -->
+        <div class="result-panel" id="resultPanel">
+            <h2>📊 练习结果</h2>
+            <div class="result-summary">
+                <div class="summary-item summary-correct">
+                    <div class="summary-number" id="correctCount">0</div>
+                    <div class="summary-label">正确</div>
+                </div>
+                <div class="summary-item summary-wrong">
+                    <div class="summary-number" id="wrongCount">0</div>
+                    <div class="summary-label">错误</div>
+                </div>
+                <div class="summary-item summary-unanswered">
+                    <div class="summary-number" id="unansweredCount">0</div>
+                    <div class="summary-label">未答</div>
+                </div>
+                <div class="summary-item summary-score">
+                    <div class="summary-number" id="scoreText">0</div>
+                    <div class="summary-label">正确率(%)</div>
+                </div>
+            </div>
+            <div class="result-detail" id="resultDetail"></div>
+            <div class="wrong-grid" id="wrongGrid"></div>
+        </div>
+
+        <!-- 完成庆祝 -->
+        <div class="celebration" id="celebration">
+            <h2>🎉 练习完成！</h2>
+            <p id="celebrationText">太棒了！</p>
+        </div>
+
+        <!-- 错题本面板 -->
+        <div class="wordbook-panel" id="wordbookPanel">
+            <h2>📒 我的错题本</h2>
+            <div class="wordbook-info" id="wordbookInfo">共 0 个错词</div>
+            <div class="wrong-grid" id="wordbookGrid"></div>
+        </div>
+    </div>
+
+    <!-- 试卷打印区 -->
+    <div id="paperPrintArea"></div>
+
+    <!-- 历史记录模态框 -->
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📚 历史记录</h2>
+                <button class="modal-close" onclick="closeHistory()">&times;</button>
+            </div>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <script>
+        // ============================================================
+        // 词汇数据库 - 人教版小学英语（PEP）常见词汇，覆盖三至六年级
+        // 每条：{ english: 英文, chinese: 中文, grade: 年级 }
+        // ============================================================
+        const WORDS = [
+            // ===== 三年级（基础词汇，约 70 词）=====
+            { english: 'apple', chinese: '苹果', grade: 3 },
+            { english: 'banana', chinese: '香蕉', grade: 3 },
+            { english: 'orange', chinese: '橙子', grade: 3 },
+            { english: 'pear', chinese: '梨', grade: 3 },
+            { english: 'cat', chinese: '猫', grade: 3 },
+            { english: 'dog', chinese: '狗', grade: 3 },
+            { english: 'pig', chinese: '猪', grade: 3 },
+            { english: 'duck', chinese: '鸭子', grade: 3 },
+            { english: 'rabbit', chinese: '兔子', grade: 3 },
+            { english: 'bear', chinese: '熊', grade: 3 },
+            { english: 'bird', chinese: '鸟', grade: 3 },
+            { english: 'monkey', chinese: '猴子', grade: 3 },
+            { english: 'panda', chinese: '熊猫', grade: 3 },
+            { english: 'elephant', chinese: '大象', grade: 3 },
+            { english: 'tiger', chinese: '老虎', grade: 3 },
+            { english: 'lion', chinese: '狮子', grade: 3 },
+            { english: 'red', chinese: '红色', grade: 3 },
+            { english: 'blue', chinese: '蓝色', grade: 3 },
+            { english: 'yellow', chinese: '黄色', grade: 3 },
+            { english: 'green', chinese: '绿色', grade: 3 },
+            { english: 'black', chinese: '黑色', grade: 3 },
+            { english: 'white', chinese: '白色', grade: 3 },
+            { english: 'pink', chinese: '粉色', grade: 3 },
+            { english: 'orange', chinese: '橙色', grade: 3 },
+            { english: 'brown', chinese: '棕色', grade: 3 },
+            { english: 'one', chinese: '一', grade: 3 },
+            { english: 'two', chinese: '二', grade: 3 },
+            { english: 'three', chinese: '三', grade: 3 },
+            { english: 'four', chinese: '四', grade: 3 },
+            { english: 'five', chinese: '五', grade: 3 },
+            { english: 'six', chinese: '六', grade: 3 },
+            { english: 'seven', chinese: '七', grade: 3 },
+            { english: 'eight', chinese: '八', grade: 3 },
+            { english: 'nine', chinese: '九', grade: 3 },
+            { english: 'ten', chinese: '十', grade: 3 },
+            { english: 'hello', chinese: '你好', grade: 3 },
+            { english: 'hi', chinese: '嗨', grade: 3 },
+            { english: 'goodbye', chinese: '再见', grade: 3 },
+            { english: 'bye', chinese: '再见', grade: 3 },
+            { english: 'name', chinese: '名字', grade: 3 },
+            { english: 'friend', chinese: '朋友', grade: 3 },
+            { english: 'boy', chinese: '男孩', grade: 3 },
+            { english: 'girl', chinese: '女孩', grade: 3 },
+            { english: 'father', chinese: '父亲', grade: 3 },
+            { english: 'mother', chinese: '母亲', grade: 3 },
+            { english: 'brother', chinese: '哥哥/弟弟', grade: 3 },
+            { english: 'sister', chinese: '姐姐/妹妹', grade: 3 },
+            { english: 'grandfather', chinese: '祖父', grade: 3 },
+            { english: 'grandmother', chinese: '祖母', grade: 3 },
+            { english: 'teacher', chinese: '老师', grade: 3 },
+            { english: 'student', chinese: '学生', grade: 3 },
+            { english: 'book', chinese: '书', grade: 3 },
+            { english: 'pen', chinese: '钢笔', grade: 3 },
+            { english: 'pencil', chinese: '铅笔', grade: 3 },
+            { english: 'ruler', chinese: '尺子', grade: 3 },
+            { english: 'eraser', chinese: '橡皮', grade: 3 },
+            { english: 'bag', chinese: '包', grade: 3 },
+            { english: 'school', chinese: '学校', grade: 3 },
+            { english: 'class', chinese: '班级', grade: 3 },
+            { english: 'head', chinese: '头', grade: 3 },
+            { english: 'face', chinese: '脸', grade: 3 },
+            { english: 'eye', chinese: '眼睛', grade: 3 },
+            { english: 'ear', chinese: '耳朵', grade: 3 },
+            { english: 'nose', chinese: '鼻子', grade: 3 },
+            { english: 'mouth', chinese: '嘴', grade: 3 },
+            { english: 'hand', chinese: '手', grade: 3 },
+            { english: 'foot', chinese: '脚', grade: 3 },
+            { english: 'arm', chinese: '胳膊', grade: 3 },
+            { english: 'leg', chinese: '腿', grade: 3 },
+            { english: 'body', chinese: '身体', grade: 3 },
+            { english: 'water', chinese: '水', grade: 3 },
+            { english: 'milk', chinese: '牛奶', grade: 3 },
+
+            // ===== 四年级（进阶词汇，约 70 词）=====
+            { english: 'family', chinese: '家庭', grade: 4 },
+            { english: 'father', chinese: '爸爸', grade: 4 },
+            { english: 'mother', chinese: '妈妈', grade: 4 },
+            { english: 'parent', chinese: '父母', grade: 4 },
+            { english: 'uncle', chinese: '叔叔', grade: 4 },
+            { english: 'aunt', chinese: '阿姨', grade: 4 },
+            { english: 'cousin', chinese: '表兄弟姐妹', grade: 4 },
+            { english: 'baby', chinese: '婴儿', grade: 4 },
+            { english: 'people', chinese: '人', grade: 4 },
+            { english: 'man', chinese: '男人', grade: 4 },
+            { english: 'woman', chinese: '女人', grade: 4 },
+            { english: 'children', chinese: '孩子们', grade: 4 },
+            { english: 'animal', chinese: '动物', grade: 4 },
+            { english: 'horse', chinese: '马', grade: 4 },
+            { english: 'cow', chinese: '奶牛', grade: 4 },
+            { english: 'sheep', chinese: '绵羊', grade: 4 },
+            { english: 'goat', chinese: '山羊', grade: 4 },
+            { english: 'hen', chinese: '母鸡', grade: 4 },
+            { english: 'fish', chinese: '鱼', grade: 4 },
+            { english: 'mouse', chinese: '老鼠', grade: 4 },
+            { english: 'snake', chinese: '蛇', grade: 4 },
+            { english: 'food', chinese: '食物', grade: 4 },
+            { english: 'rice', chinese: '米饭', grade: 4 },
+            { english: 'bread', chinese: '面包', grade: 4 },
+            { english: 'meat', chinese: '肉', grade: 4 },
+            { english: 'egg', chinese: '鸡蛋', grade: 4 },
+            { english: 'cake', chinese: '蛋糕', grade: 4 },
+            { english: 'ice cream', chinese: '冰淇淋', grade: 4 },
+            { english: 'juice', chinese: '果汁', grade: 4 },
+            { english: 'tea', chinese: '茶', grade: 4 },
+            { english: 'coffee', chinese: '咖啡', grade: 4 },
+            { english: 'soup', chinese: '汤', grade: 4 },
+            { english: 'noodle', chinese: '面条', grade: 4 },
+            { english: 'vegetable', chinese: '蔬菜', grade: 4 },
+            { english: 'tomato', chinese: '西红柿', grade: 4 },
+            { english: 'potato', chinese: '土豆', grade: 4 },
+            { english: 'candy', chinese: '糖果', grade: 4 },
+            { english: 'breakfast', chinese: '早餐', grade: 4 },
+            { english: 'lunch', chinese: '午餐', grade: 4 },
+            { english: 'dinner', chinese: '晚餐', grade: 4 },
+            { english: 'classroom', chinese: '教室', grade: 4 },
+            { english: 'desk', chinese: '课桌', grade: 4 },
+            { english: 'chair', chinese: '椅子', grade: 4 },
+            { english: 'window', chinese: '窗户', grade: 4 },
+            { english: 'door', chinese: '门', grade: 4 },
+            { english: 'floor', chinese: '地板', grade: 4 },
+            { english: 'wall', chinese: '墙', grade: 4 },
+            { english: 'picture', chinese: '图画', grade: 4 },
+            { english: 'light', chinese: '灯', grade: 4 },
+            { english: 'fan', chinese: '风扇', grade: 4 },
+            { english: 'computer', chinese: '电脑', grade: 4 },
+            { english: 'board', chinese: '黑板', grade: 4 },
+            { english: 'home', chinese: '家', grade: 4 },
+            { english: 'room', chinese: '房间', grade: 4 },
+            { english: 'bed', chinese: '床', grade: 4 },
+            { english: 'table', chinese: '桌子', grade: 4 },
+            { english: 'sofa', chinese: '沙发', grade: 4 },
+            { english: 'phone', chinese: '电话', grade: 4 },
+            { english: 'fridge', chinese: '冰箱', grade: 4 },
+            { english: 'kitchen', chinese: '厨房', grade: 4 },
+            { english: 'bathroom', chinese: '浴室', grade: 4 },
+            { english: 'bedroom', chinese: '卧室', grade: 4 },
+            { english: 'living room', chinese: '客厅', grade: 4 },
+            { english: 'study', chinese: '书房', grade: 4 },
+            { english: 'garden', chinese: '花园', grade: 4 },
+            { english: 'clothes', chinese: '衣服', grade: 4 },
+            { english: 'shirt', chinese: '衬衫', grade: 4 },
+            { english: 'shoes', chinese: '鞋子', grade: 4 },
+            { english: 'hat', chinese: '帽子', grade: 4 },
+            { english: 'clock', chinese: '时钟', grade: 4 },
+            { english: 'key', chinese: '钥匙', grade: 4 },
+
+            // ===== 五年级（高频词汇，约 80 词）=====
+            { english: 'beautiful', chinese: '美丽的', grade: 5 },
+            { english: 'important', chinese: '重要的', grade: 5 },
+            { english: 'interesting', chinese: '有趣的', grade: 5 },
+            { english: 'difficult', chinese: '困难的', grade: 5 },
+            { english: 'easy', chinese: '容易的', grade: 5 },
+            { english: 'happy', chinese: '高兴的', grade: 5 },
+            { english: 'sad', chinese: '悲伤的', grade: 5 },
+            { english: 'angry', chinese: '生气的', grade: 5 },
+            { english: 'tired', chinese: '疲劳的', grade: 5 },
+            { english: 'hungry', chinese: '饥饿的', grade: 5 },
+            { english: 'thirsty', chinese: '口渴的', grade: 5 },
+            { english: 'big', chinese: '大的', grade: 5 },
+            { english: 'small', chinese: '小的', grade: 5 },
+            { english: 'long', chinese: '长的', grade: 5 },
+            { english: 'short', chinese: '短的', grade: 5 },
+            { english: 'tall', chinese: '高的', grade: 5 },
+            { english: 'fat', chinese: '胖的', grade: 5 },
+            { english: 'thin', chinese: '瘦的', grade: 5 },
+            { english: 'old', chinese: '老的', grade: 5 },
+            { english: 'young', chinese: '年轻的', grade: 5 },
+            { english: 'new', chinese: '新的', grade: 5 },
+            { english: 'good', chinese: '好的', grade: 5 },
+            { english: 'bad', chinese: '坏的', grade: 5 },
+            { english: 'hot', chinese: '热的', grade: 5 },
+            { english: 'cold', chinese: '冷的', grade: 5 },
+            { english: 'clean', chinese: '干净的', grade: 5 },
+            { english: 'dirty', chinese: '脏的', grade: 5 },
+            { english: 'fast', chinese: '快的', grade: 5 },
+            { english: 'slow', chinese: '慢的', grade: 5 },
+            { english: 'strong', chinese: '强壮的', grade: 5 },
+            { english: 'weak', chinese: '弱的', grade: 5 },
+            { english: 'kind', chinese: '善良的', grade: 5 },
+            { english: 'clever', chinese: '聪明的', grade: 5 },
+            { english: 'friendly', chinese: '友好的', grade: 5 },
+            { english: 'quiet', chinese: '安静的', grade: 5 },
+            { english: 'busy', chinese: '忙碌的', grade: 5 },
+            { english: 'free', chinese: '空闲的', grade: 5 },
+            { english: 'favorite', chinese: '最喜欢的', grade: 5 },
+            { english: 'subject', chinese: '科目', grade: 5 },
+            { english: 'math', chinese: '数学', grade: 5 },
+            { english: 'english', chinese: '英语', grade: 5 },
+            { english: 'chinese', chinese: '语文', grade: 5 },
+            { english: 'science', chinese: '科学', grade: 5 },
+            { english: 'music', chinese: '音乐', grade: 5 },
+            { english: 'art', chinese: '美术', grade: 5 },
+            { english: 'pe', chinese: '体育', grade: 5 },
+            { english: 'history', chinese: '历史', grade: 5 },
+            { english: 'geography', chinese: '地理', grade: 5 },
+            { english: 'week', chinese: '周', grade: 5 },
+            { english: 'weekend', chinese: '周末', grade: 5 },
+            { english: 'today', chinese: '今天', grade: 5 },
+            { english: 'tomorrow', chinese: '明天', grade: 5 },
+            { english: 'yesterday', chinese: '昨天', grade: 5 },
+            { english: 'morning', chinese: '早晨', grade: 5 },
+            { english: 'afternoon', chinese: '下午', grade: 5 },
+            { english: 'evening', chinese: '傍晚', grade: 5 },
+            { english: 'night', chinese: '夜晚', grade: 5 },
+            { english: 'day', chinese: '天', grade: 5 },
+            { english: 'month', chinese: '月', grade: 5 },
+            { english: 'year', chinese: '年', grade: 5 },
+            { english: 'time', chinese: '时间', grade: 5 },
+            { english: 'hour', chinese: '小时', grade: 5 },
+            { english: 'minute', chinese: '分钟', grade: 5 },
+            { english: 'season', chinese: '季节', grade: 5 },
+            { english: 'spring', chinese: '春天', grade: 5 },
+            { english: 'summer', chinese: '夏天', grade: 5 },
+            { english: 'autumn', chinese: '秋天', grade: 5 },
+            { english: 'winter', chinese: '冬天', grade: 5 },
+            { english: 'weather', chinese: '天气', grade: 5 },
+            { english: 'sunny', chinese: '晴天的', grade: 5 },
+            { english: 'rainy', chinese: '下雨的', grade: 5 },
+            { english: 'cloudy', chinese: '多云的', grade: 5 },
+            { english: 'windy', chinese: '有风的', grade: 5 },
+            { english: 'snowy', chinese: '下雪的', grade: 5 },
+            { english: 'warm', chinese: '温暖的', grade: 5 },
+            { english: 'cool', chinese: '凉爽的', grade: 5 },
+            { english: 'city', chinese: '城市', grade: 5 },
+            { english: 'country', chinese: '乡村/国家', grade: 5 },
+            { english: 'mountain', chinese: '山', grade: 5 },
+            { english: 'river', chinese: '河流', grade: 5 },
+            { english: 'lake', chinese: '湖泊', grade: 5 },
+            { english: 'forest', chinese: '森林', grade: 5 },
+            { english: 'tree', chinese: '树', grade: 5 },
+            { english: 'flower', chinese: '花', grade: 5 },
+            { english: 'grass', chinese: '草', grade: 5 },
+
+            // ===== 六年级（小升初词汇，约 80 词）=====
+            { english: 'future', chinese: '未来', grade: 6 },
+            { english: 'dream', chinese: '梦想', grade: 6 },
+            { english: 'hope', chinese: '希望', grade: 6 },
+            { english: 'wish', chinese: '愿望', grade: 6 },
+            { english: 'success', chinese: '成功', grade: 6 },
+            { english: 'fail', chinese: '失败', grade: 6 },
+            { english: 'try', chinese: '尝试', grade: 6 },
+            { english: 'win', chinese: '获胜', grade: 6 },
+            { english: 'lose', chinese: '失去', grade: 6 },
+            { english: 'begin', chinese: '开始', grade: 6 },
+            { english: 'finish', chinese: '完成', grade: 6 },
+            { english: 'stop', chinese: '停止', grade: 6 },
+            { english: 'start', chinese: '开始', grade: 6 },
+            { english: 'change', chinese: '改变', grade: 6 },
+            { english: 'help', chinese: '帮助', grade: 6 },
+            { english: 'learn', chinese: '学习', grade: 6 },
+            { english: 'teach', chinese: '教', grade: 6 },
+            { english: 'think', chinese: '思考', grade: 6 },
+            { english: 'know', chinese: '知道', grade: 6 },
+            { english: 'understand', chinese: '理解', grade: 6 },
+            { english: 'remember', chinese: '记得', grade: 6 },
+            { english: 'forget', chinese: '忘记', grade: 6 },
+            { english: 'answer', chinese: '回答', grade: 6 },
+            { english: 'ask', chinese: '询问', grade: 6 },
+            { english: 'tell', chinese: '告诉', grade: 6 },
+            { english: 'talk', chinese: '谈话', grade: 6 },
+            { english: 'speak', chinese: '说话', grade: 6 },
+            { english: 'read', chinese: '读', grade: 6 },
+            { english: 'write', chinese: '写', grade: 6 },
+            { english: 'listen', chinese: '听', grade: 6 },
+            { english: 'watch', chinese: '观看', grade: 6 },
+            { english: 'see', chinese: '看见', grade: 6 },
+            { english: 'look', chinese: '看', grade: 6 },
+            { english: 'hear', chinese: '听见', grade: 6 },
+            { english: 'feel', chinese: '感觉', grade: 6 },
+            { english: 'love', chinese: '爱', grade: 6 },
+            { english: 'like', chinese: '喜欢', grade: 6 },
+            { english: 'hate', chinese: '讨厌', grade: 6 },
+            { english: 'want', chinese: '想要', grade: 6 },
+            { english: 'need', chinese: '需要', grade: 6 },
+            { english: 'must', chinese: '必须', grade: 6 },
+            { english: 'should', chinese: '应该', grade: 6 },
+            { english: 'can', chinese: '能', grade: 6 },
+            { english: 'could', chinese: '可以', grade: 6 },
+            { english: 'will', chinese: '将', grade: 6 },
+            { english: 'would', chinese: '愿意', grade: 6 },
+            { english: 'may', chinese: '可以', grade: 6 },
+            { english: 'might', chinese: '可能', grade: 6 },
+            { english: 'travel', chinese: '旅行', grade: 6 },
+            { english: 'trip', chinese: '旅行', grade: 6 },
+            { english: 'holiday', chinese: '假日', grade: 6 },
+            { english: 'vacation', chinese: '假期', grade: 6 },
+            { english: 'airport', chinese: '机场', grade: 6 },
+            { english: 'station', chinese: '车站', grade: 6 },
+            { english: 'ticket', chinese: '票', grade: 6 },
+            { english: 'passenger', chinese: '乘客', grade: 6 },
+            { english: 'passport', chinese: '护照', grade: 6 },
+            { english: 'map', chinese: '地图', grade: 6 },
+            { english: 'job', chinese: '工作', grade: 6 },
+            { english: 'work', chinese: '工作', grade: 6 },
+            { english: 'doctor', chinese: '医生', grade: 6 },
+            { english: 'nurse', chinese: '护士', grade: 6 },
+            { english: 'driver', chinese: '司机', grade: 6 },
+            { english: 'farmer', chinese: '农民', grade: 6 },
+            { english: 'worker', chinese: '工人', grade: 6 },
+            { english: 'singer', chinese: '歌手', grade: 6 },
+            { english: 'dancer', chinese: '舞者', grade: 6 },
+            { english: 'writer', chinese: '作家', grade: 6 },
+            { english: 'artist', chinese: '艺术家', grade: 6 },
+            { english: 'actor', chinese: '演员', grade: 6 },
+            { english: 'scientist', chinese: '科学家', grade: 6 },
+            { english: 'pilot', chinese: '飞行员', grade: 6 },
+            { english: 'police', chinese: '警察', grade: 6 },
+            { english: 'hospital', chinese: '医院', grade: 6 },
+            { english: 'library', chinese: '图书馆', grade: 6 },
+            { english: 'museum', chinese: '博物馆', grade: 6 },
+            { english: 'cinema', chinese: '电影院', grade: 6 },
+            { english: 'park', chinese: '公园', grade: 6 },
+            { english: 'supermarket', chinese: '超市', grade: 6 },
+            { english: 'restaurant', chinese: '餐厅', grade: 6 },
+            { english: 'factory', chinese: '工厂', grade: 6 },
+            { english: 'university', chinese: '大学', grade: 6 },
+            { english: 'health', chinese: '健康', grade: 6 },
+            { english: 'exercise', chinese: '锻炼', grade: 6 }
+        ];
+
+        // ============================================================
+        // 状态管理
+        // ============================================================
+        let currentQuestions = [];      // 本次题目列表 [{word, ...}, ...]
+        let currentAnswers = [];        // 学生作答 [{ userAnswer, correct, mode }, ...]
+        let wrongWords = [];            // 本次错词
+        let currentIdx = 0;             // 当前题号
+        let correctSoFar = 0;           // 已答对数
+        let practiceStartTime = null;
+        let practiceEndTime = null;
+        let currentStage = 'practice';
+        let timerInterval = null;
+        let timerTotalSeconds = 0;
+        let timerRemainingSeconds = 0;
+        let currentChoiceOptions = [];  // 选择题当前选项
+        let answeredCurrent = false;    // 当前题是否已作答
+
+        const GRADE_NAMES = { 3: '三年级', 4: '四年级', 5: '五年级', 6: '六年级' };
+
+        // ============================================================
+        // 词汇过滤：根据年级和范围
+        // ============================================================
+        function getWordPool() {
+            const grade = parseInt(document.getElementById('gradeSelect').value);
+            const range = document.getElementById('rangeSelect').value;
+            if (range === 'current') {
+                return WORDS.filter(w => w.grade === grade);
+            } else if (range === 'cumulative') {
+                return WORDS.filter(w => w.grade <= grade);
+            }
+            return WORDS.slice();
+        }
+
+        // 从错题本取词（跨年级）
+        function getWrongWordPool() {
+            const book = JSON.parse(localStorage.getItem('englishWordbook') || '[]');
+            // book 中存的是 {english, chinese, grade}；用 english 反查原表，避免遗漏
+            return book.map(b => {
+                const found = WORDS.find(w => w.english.toLowerCase() === b.english.toLowerCase());
+                return found || b;
+            });
+        }
+
+        function onGradeChange() {
+            const grade = parseInt(document.getElementById('gradeSelect').value);
+            const pool = WORDS.filter(w => w.grade === grade);
+            document.getElementById('subtitle').textContent =
+                `${GRADE_NAMES[grade]} · 本级 ${pool.length} 个词汇 | 看中拼英 / 看英选中 / 听写`;
+        }
+
+        function onRangeChange() { onGradeChange(); }
+
+        function onTimerToggle() {
+            const enabled = document.getElementById('timerEnable').checked;
+            document.getElementById('timerMinutes').style.display = enabled ? 'inline-block' : 'none';
+        }
+
+        function getSelectedMode() {
+            const checked = document.querySelector('input[name="mode"]:checked');
+            return checked ? checked.value : 'spell';
+        }
+
+        function shuffleArray(array) {
+            const a = [...array];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        // 生成干扰选项（选择题用，从同池中随机取）
+        function generateDistractors(correctWord, pool, count) {
+            const others = pool.filter(w => w.english.toLowerCase() !== correctWord.english.toLowerCase());
+            const shuffled = shuffleArray(others);
+            return shuffled.slice(0, count);
+        }
+
+        // ============================================================
+        // 开始新练习
+        // ============================================================
+        function startNewPractice() {
+            stopTimer();
+            const wrongOnly = document.getElementById('wrongOnly').checked;
+            let pool = wrongOnly ? getWrongWordPool() : getWordPool();
+
+            if (pool.length === 0) {
+                alert(wrongOnly ? '错题本为空，请先做一次练习产生错题。' : '当前词汇范围为空。');
+                return;
+            }
+
+            const count = Math.min(parseInt(document.getElementById('countSelect').value) || 20, pool.length);
+            const mode = getSelectedMode();
+
+            // 题目构建
+            let qs = shuffleArray(pool).slice(0, count).map(word => {
+                const q = { word: { english: word.english, chinese: word.chinese, grade: word.grade }, mode };
+                if (mode === 'choice') {
+                    // 为看英选中题准备 4 个中文选项
+                    const distract = generateDistractors(word, pool, 3);
+                    const options = shuffleArray([word, ...distract]).map(o => o.chinese);
+                    q.options = options;
+                }
+                return q;
+            });
+
+            currentQuestions = qs;
+            currentAnswers = new Array(qs.length).fill(null);
+            wrongWords = [];
+            currentIdx = 0;
+            correctSoFar = 0;
+            practiceStartTime = new Date();
+            practiceEndTime = null;
+            currentStage = 'practice';
+            answeredCurrent = false;
+
+            // UI 切换
+            document.getElementById('resultPanel').classList.remove('show');
+            document.getElementById('celebration').classList.remove('show');
+            document.getElementById('wordbookPanel').classList.remove('show');
+            document.getElementById('practiceArea').classList.add('show');
+            document.getElementById('btnNext').style.display = 'none';
+            document.getElementById('btnNext').textContent = '✅ 下一题 (Enter)';
+            updateStageIndicator();
+
+            if (document.getElementById('timerEnable').checked) {
+                startTimer();
+            }
+
+            renderCurrentQuestion();
+        }
+
+        // 仅练错题本的快捷入口
+        function practiceWrongOnly() {
+            document.getElementById('wrongOnly').checked = true;
+            startNewPractice();
+            document.getElementById('wrongOnly').checked = false;
+        }
+
+        // ============================================================
+        // 渲染当前题目
+        // ============================================================
+        function renderCurrentQuestion() {
+            if (currentIdx >= currentQuestions.length) {
+                finishPractice();
+                return;
+            }
+
+            const q = currentQuestions[currentIdx];
+            const mode = q.mode;
+            answeredCurrent = false;
+
+            // 进度
+            document.getElementById('progressInfo').textContent =
+                `第 ${currentIdx + 1} / ${currentQuestions.length} 题 · 已对 ${correctSoFar} 题`;
+
+            const prompt = document.getElementById('questionPrompt');
+            const display = document.getElementById('wordDisplay');
+            const hint = document.getElementById('wordHint');
+            const input = document.getElementById('answerInput');
+            const speakBtn = document.getElementById('speakBtn');
+            const choiceBox = document.getElementById('choiceOptions');
+            const feedback = document.getElementById('feedback');
+
+            feedback.textContent = '';
+            feedback.className = 'feedback';
+            input.className = 'answer-input-large';
+            input.value = '';
+            input.disabled = false;
+            choiceBox.innerHTML = '';
+            choiceBox.style.display = 'none';
+            speakBtn.style.display = 'none';
+
+            if (mode === 'spell') {
+                // 看中文拼英文：显示中文，输入英文
+                prompt.textContent = '✍️ 请根据中文拼写出英文单词';
+                display.textContent = q.word.chinese;
+                display.className = 'word-display chinese';
+                hint.innerHTML = `字母数：<span class="letter-count">${q.word.english.replace(/\s/g, '').length}</span> 个`;
+                input.style.display = 'inline-block';
+                input.placeholder = '在此输入英文...';
+                setTimeout(() => input.focus(), 50);
+            } else if (mode === 'choice') {
+                // 看英文选中文：显示英文，4 个中文选项
+                prompt.textContent = '📖 请选出对应的中文意思';
+                display.textContent = q.word.english;
+                display.className = 'word-display english';
+                hint.innerHTML = '';
+                input.style.display = 'none';
+                choiceBox.style.display = 'grid';
+                renderChoiceOptions(q);
+                // 同时提供朗读
+                speakBtn.style.display = 'inline-block';
+            } else if (mode === 'dictation') {
+                // 听写：不显示单词，朗读后让学生拼写
+                prompt.textContent = '🔊 请点击喇叭听单词，然后拼写出来';
+                display.textContent = ' 🔊 ';
+                display.className = 'word-display';
+                hint.innerHTML = '点击下方 🔊 听单词（如未朗读，请确认浏览器已开启语音权限）';
+                input.style.display = 'inline-block';
+                input.placeholder = '听到的单词...';
+                speakBtn.style.display = 'inline-block';
+                // 自动朗读一次
+                setTimeout(() => speak(q.word.english), 300);
+                setTimeout(() => input.focus(), 600);
+            }
+
+            document.getElementById('btnNext').style.display = 'none';
+        }
+
+        // 渲染选择题选项
+        function renderChoiceOptions(q) {
+            const box = document.getElementById('choiceOptions');
+            box.innerHTML = '';
+            q.options.forEach(opt => {
+                const btn = document.createElement('button');
+                btn.className = 'choice-btn';
+                btn.textContent = opt;
+                btn.onclick = () => answerChoice(opt, q);
+                box.appendChild(btn);
+            });
+        }
+
+        // ============================================================
+        // 答题判定
+        // ============================================================
+        function answerChoice(selected, q) {
+            if (answeredCurrent) return;
+            answeredCurrent = true;
+
+            const isRight = selected === q.word.chinese;
+            const btns = document.querySelectorAll('.choice-btn');
+            btns.forEach(b => {
+                b.disabled = true;
+                if (b.textContent === q.word.chinese) b.classList.add('correct');
+                else if (b.textContent === selected && !isRight) b.classList.add('wrong');
+            });
+
+            recordAnswer({
+                userAnswer: selected,
+                correct: isRight,
+                mode: 'choice'
+            });
+            showFeedback(isRight, q.word);
+        }
+
+        // 输入题（拼写 / 听写）的判定
+        function answerInput() {
+            if (answeredCurrent) return false;
+            const q = currentQuestions[currentIdx];
+            const input = document.getElementById('answerInput');
+            const userVal = (input.value || '').trim();
+            if (userVal === '') return false; // 不允许空提交
+
+            answeredCurrent = true;
+            // 大小写不敏感 + 去首尾空格 + 中间多空格允许
+            const norm = s => s.toLowerCase().replace(/\s+/g, ' ').trim();
+            const isRight = norm(userVal) === norm(q.word.english);
+            input.disabled = true;
+            input.classList.add(isRight ? 'correct' : 'wrong');
+
+            recordAnswer({
+                userAnswer: userVal,
+                correct: isRight,
+                mode: q.mode
+            });
+            showFeedback(isRight, q.word);
+            return true;
+        }
+
+        function recordAnswer(ans) {
+            currentAnswers[currentIdx] = ans;
+            if (ans.correct) correctSoFar++;
+        }
+
+        function showFeedback(isRight, word) {
+            const fb = document.getElementById('feedback');
+            if (isRight) {
+                fb.innerHTML = '✅ <span class="correct-word">' + word.english + '</span> 答对了！';
+                fb.className = 'feedback correct';
+            } else {
+                fb.innerHTML = `❌ 正确答案：<span class="correct-word">${word.english}</span> （${word.chinese}）`;
+                fb.className = 'feedback wrong';
+                wrongWords.push({
+                    word: { ...word },
+                    userAnswer: currentAnswers[currentIdx].userAnswer,
+                    mode: currentAnswers[currentIdx].mode
+                });
+                // 同步到错题本
+                addToWordbook(word);
+            }
+            // 显示「下一题」按钮
+            const btnNext = document.getElementById('btnNext');
+            btnNext.style.display = 'inline-block';
+            btnNext.textContent = (currentIdx + 1 >= currentQuestions.length) ? '📊 查看结果 (Enter)' : '✅ 下一题 (Enter)';
+        }
+
+        function checkAndNext() {
+            const q = currentQuestions[currentIdx];
+            if (!answeredCurrent) {
+                // 输入题：先尝试判定
+                if (q.mode !== 'choice') {
+                    if (!answerInput()) return; // 输入为空时阻止
+                } else {
+                    return; // 选择题必须点选项
+                }
+            }
+            currentIdx++;
+            renderCurrentQuestion();
+        }
+
+        // 输入框回车
+        document.addEventListener('DOMContentLoaded', () => {
+            document.getElementById('answerInput').addEventListener('keydown', e => {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    checkAndNext();
+                }
+            });
+        });
+
+        // ============================================================
+        // Web Speech API 朗读
+        // ============================================================
+        function speak(text, rate) {
+            if (!('speechSynthesis' in window)) {
+                alert('当前浏览器不支持语音朗读（Web Speech API）。请使用 Chrome/Edge。');
+                return;
+            }
+            window.speechSynthesis.cancel();
+            const u = new SpeechSynthesisUtterance(text);
+            u.lang = 'en-US';
+            u.rate = rate || 0.9;
+            u.pitch = 1;
+            window.speechSynthesis.speak(u);
+        }
+
+        function speakCurrentWord() {
+            const q = currentQuestions[currentIdx];
+            if (q) speak(q.word.english);
+        }
+
+        // ============================================================
+        // 倒计时
+        // ============================================================
+        function startTimer() {
+            const minutes = parseInt(document.getElementById('timerMinutes').value) || 10;
+            timerTotalSeconds = minutes * 60;
+            timerRemainingSeconds = timerTotalSeconds;
+            updateTimerDisplay();
+            document.getElementById('timerBar').classList.add('show');
+            document.getElementById('timerBar').classList.remove('warning');
+
+            if (timerInterval) clearInterval(timerInterval);
+            timerInterval = setInterval(() => {
+                timerRemainingSeconds--;
+                if (timerRemainingSeconds <= 0) {
+                    timerRemainingSeconds = 0;
+                    updateTimerDisplay();
+                    stopTimer();
+                    if (currentStage === 'practice') {
+                        alert('⏱️ 时间到！自动结束练习。');
+                        finishPractice();
+                    }
+                    return;
+                }
+                updateTimerDisplay();
+            }, 1000);
+        }
+
+        function stopTimer() {
+            if (timerInterval) {
+                clearInterval(timerInterval);
+                timerInterval = null;
+            }
+            document.getElementById('timerBar').classList.remove('show', 'warning');
+        }
+
+        function updateTimerDisplay() {
+            const m = Math.floor(timerRemainingSeconds / 60);
+            const s = timerRemainingSeconds % 60;
+            document.getElementById('timerTime').textContent =
+                `${String(m).padStart(2, '0')}:${String(s).padStart(2, '0')}`;
+            const bar = document.getElementById('timerBar');
+            if (timerRemainingSeconds <= 60) bar.classList.add('warning');
+            else bar.classList.remove('warning');
+        }
+
+        function getElapsedSeconds() {
+            const end = practiceEndTime || new Date();
+            return Math.max(1, Math.round((end - practiceStartTime) / 1000));
+        }
+
+        function formatDuration(seconds) {
+            const m = Math.floor(seconds / 60);
+            const s = seconds % 60;
+            return m > 0 ? `${m}分${s}秒` : `${s}秒`;
+        }
+
+        // ============================================================
+        // 结束练习 → 显示结果
+        // ============================================================
+        function finishPractice() {
+            // 处理未答的剩余题（计为未答）
+            for (let i = currentIdx; i < currentQuestions.length; i++) {
+                const q = currentQuestions[i];
+                currentAnswers[i] = { userAnswer: '未作答', correct: false, mode: q.mode };
+                wrongWords.push({ word: { ...q.word }, userAnswer: '未作答', mode: q.mode });
+                addToWordbook(q.word);
+            }
+
+            currentStage = 'review';
+            updateStageIndicator();
+            stopTimer();
+            practiceEndTime = new Date();
+
+            const total = currentQuestions.length;
+            const correct = correctSoFar;
+            const wrong = total - correct;
+            const unanswered = currentAnswers.filter(a => a && a.userAnswer === '未作答').length;
+            const accuracy = total > 0 ? Math.round(correct / total * 100) : 0;
+
+            document.getElementById('correctCount').textContent = correct;
+            document.getElementById('wrongCount').textContent = wrong;
+            document.getElementById('unansweredCount').textContent = unanswered;
+            document.getElementById('scoreText').textContent = accuracy;
+
+            const elapsed = getElapsedSeconds();
+            const timeStr = formatDuration(elapsed);
+
+            const modeName = { spell: '看中拼英', choice: '看英选中', dictation: '听写' }[getSelectedMode()];
+
+            document.getElementById('resultDetail').innerHTML =
+                `<h3>📋 答题统计</h3>
+                 <p>模式：${modeName} | 用时：约 ${timeStr} | 正确率：${accuracy}% | 错词：${wrongWords.length} 个</p>`;
+
+            // 错词卡片
+            const grid = document.getElementById('wrongGrid');
+            if (wrongWords.length === 0) {
+                grid.innerHTML = '<p style="text-align:center;color:#4CAF50;font-weight:bold;padding:10px;">🎉 全部正确，无错词！</p>';
+                document.getElementById('celebration').classList.add('show');
+                document.getElementById('celebrationText').textContent =
+                    `${modeName}练习正确率 ${accuracy}%，继续加油！`;
+            } else {
+                grid.innerHTML = wrongWords.map(w => `
+                    <div class="wrong-card">
+                        <div class="wc-en">${escapeHtml(w.word.english)}</div>
+                        <div class="wc-cn">${escapeHtml(w.word.chinese)}</div>
+                        <div class="wc-ans">你的答案：<span class="mine">${escapeHtml(String(w.userAnswer))}</span> | 正确：<span class="right">${escapeHtml(w.word.english)}</span></div>
+                    </div>
+                `).join('');
+            }
+
+            document.getElementById('practiceArea').classList.remove('show');
+            document.getElementById('resultPanel').classList.add('show');
+            document.getElementById('btnNext').style.display = 'none';
+            document.getElementById('btnPracticeWrong').style.display = wrongWords.length > 0 ? 'inline-block' : 'none';
+
+            saveToHistory(correct, wrong, unanswered, accuracy, elapsed, modeName);
+            window.scrollTo({ top: 0, behavior: 'smooth' });
+        }
+
+        function updateStageIndicator() {
+            const stages = ['stage1', 'stage2', 'stage3'];
+            stages.forEach((s, i) => {
+                const el = document.getElementById(s);
+                el.classList.remove('active', 'completed');
+                if (currentStage === 'practice' && i === 0) el.classList.add('active');
+                else if (currentStage === 'review' && i === 1) el.classList.add('active');
+                else if (currentStage === 'wordbook' && i === 2) el.classList.add('active');
+                else if ((currentStage === 'review' && i === 0) ||
+                         (currentStage === 'wordbook' && i < 2)) {
+                    el.classList.add('completed');
+                }
+            });
+        }
+
+        function escapeHtml(s) {
+            return String(s).replace(/[&<>"']/g, c => ({
+                '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+            }[c]));
+        }
+
+        // ============================================================
+        // 错题本（localStorage 持久化）
+        // ============================================================
+        function getWordbook() {
+            return JSON.parse(localStorage.getItem('englishWordbook') || '[]');
+        }
+
+        function addToWordbook(word) {
+            const book = getWordbook();
+            const exists = book.some(w => w.english.toLowerCase() === word.english.toLowerCase());
+            if (!exists) {
+                book.push({ english: word.english, chinese: word.chinese, grade: word.grade, wrongCount: 1, addedAt: Date.now() });
+            } else {
+                const w = book.find(w => w.english.toLowerCase() === word.english.toLowerCase());
+                w.wrongCount = (w.wrongCount || 1) + 1;
+            }
+            localStorage.setItem('englishWordbook', JSON.stringify(book));
+        }
+
+        function showWordbook() {
+            const book = getWordbook();
+            currentStage = 'wordbook';
+            updateStageIndicator();
+            document.getElementById('wordbookPanel').classList.add('show');
+            document.getElementById('wordbookInfo').textContent =
+                `共 ${book.length} 个错词（按错误时间倒序，错误次数越多越靠前）`;
+            const grid = document.getElementById('wordbookGrid');
+            if (book.length === 0) {
+                grid.innerHTML = '<p style="text-align:center;color:#999;padding:20px;">错题本为空，快去练习吧！</p>';
+                return;
+            }
+            // 按错误次数排序
+            book.sort((a, b) => (b.wrongCount || 1) - (a.wrongCount || 1));
+            grid.innerHTML = book.map(w => `
+                <div class="wrong-card">
+                    <div class="wc-en">${escapeHtml(w.english)}
+                        <button class="speak-btn" style="width:30px;height:30px;font-size:14px;display:inline-block;vertical-align:middle;padding:0;margin-left:6px;"
+                                onclick="speak('${escapeHtml(w.english)}')">🔊</button>
+                    </div>
+                    <div class="wc-cn">${escapeHtml(w.chinese)}（${GRADE_NAMES[w.grade] || '通用'}）</div>
+                    <div class="wc-ans">错误 <span class="mine">${w.wrongCount || 1}</span> 次</div>
+                </div>
+            `).join('');
+            window.scrollTo({ top: document.getElementById('wordbookPanel').offsetTop - 20, behavior: 'smooth' });
+        }
+
+        // ============================================================
+        // 历史记录
+        // ============================================================
+        function saveToHistory(correct, wrong, unanswered, accuracy, elapsed, modeName) {
+            const history = JSON.parse(localStorage.getItem('englishWordsHistory') || '[]');
+            const record = {
+                id: Date.now(),
+                date: new Date().toLocaleString('zh-CN'),
+                grade: GRADE_NAMES[parseInt(document.getElementById('gradeSelect').value)],
+                mode: modeName,
+                total: currentQuestions.length,
+                correct, wrong, unanswered,
+                accuracy,
+                elapsedSeconds: elapsed,
+                timeSpent: Math.max(1, Math.round(elapsed / 60)),
+                wrongWords: wrongWords.map(w => ({
+                    english: w.word.english,
+                    chinese: w.word.chinese,
+                    userAnswer: w.userAnswer
+                }))
+            };
+            history.unshift(record);
+            if (history.length > 20) history.pop();
+            localStorage.setItem('englishWordsHistory', JSON.stringify(history));
+        }
+
+        function showHistory() {
+            const history = JSON.parse(localStorage.getItem('englishWordsHistory') || '[]');
+            const listEl = document.getElementById('historyList');
+            if (history.length === 0) {
+                listEl.innerHTML = '<div class="no-history">暂无历史记录</div>';
+            } else {
+                listEl.innerHTML = history.map(r => `
+                    <div class="history-item">
+                        <div class="history-header">
+                            <span class="history-date">${r.date} · ${r.grade} · ${r.mode}</span>
+                            <span class="history-score" style="color:${r.accuracy >= 90 ? '#4CAF50' : r.accuracy >= 60 ? '#FF9800' : '#f44336'}">${r.accuracy}%</span>
+                        </div>
+                        <div class="history-stats">
+                            <span>✅${r.correct}/${r.total}</span>
+                            <span>❌${r.wrong}</span>
+                            <span>⏱️${formatDuration(r.elapsedSeconds)}</span>
+                        </div>
+                        ${r.wrongWords.length > 0 ? `
+                            <div class="history-wrong-list">
+                                <h4>❌ 错词（${r.wrongWords.length}）：</h4>
+                                ${r.wrongWords.slice(0, 15).map(w => `
+                                    <div class="wrong-word">
+                                        <strong>${escapeHtml(w.english)}</strong>（${escapeHtml(w.chinese)}）—— 你写的：<span>${escapeHtml(String(w.userAnswer))}</span>
+                                    </div>
+                                `).join('')}
+                                ${r.wrongWords.length > 15 ? `<div class="wrong-word">……还有 ${r.wrongWords.length - 15} 个</div>` : ''}
+                            </div>
+                        ` : ''}
+                    </div>
+                `).join('');
+            }
+            document.getElementById('historyModal').classList.add('show');
+        }
+
+        function closeHistory() {
+            document.getElementById('historyModal').classList.remove('show');
+        }
+
+        document.getElementById('historyModal').addEventListener('click', function(e) {
+            if (e.target === this) closeHistory();
+        });
+
+        // ============================================================
+        // 导出 / 打印
+        // ============================================================
+        function toCSVRow(arr) {
+            return arr.map(v => {
+                if (v == null) v = '';
+                v = String(v);
+                if (v.indexOf(',') >= 0 || v.indexOf('"') >= 0 || v.indexOf('\n') >= 0) {
+                    return '"' + v.replace(/"/g, '""') + '"';
+                }
+                return v;
+            }).join(',');
+        }
+
+        function downloadBlob(blob, filename) {
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement('a');
+            a.href = url;
+            a.download = filename;
+            document.body.appendChild(a);
+            a.click();
+            document.body.removeChild(a);
+            setTimeout(() => URL.revokeObjectURL(url), 1000);
+        }
+
+        function formatDateForFile() {
+            const d = new Date();
+            const pad = n => String(n).padStart(2, '0');
+            return `${d.getFullYear()}${pad(d.getMonth()+1)}${pad(d.getDate())}_${pad(d.getHours())}${pad(d.getMinutes())}`;
+        }
+
+        // 导出错词本为 CSV
+        function exportWrongWords() {
+            const book = getWordbook();
+            if (book.length === 0) {
+                alert('错题本为空，无内容可导出。');
+                return;
+            }
+            book.sort((a, b) => (b.wrongCount || 1) - (a.wrongCount || 1));
+            const header = ['英文', '中文', '年级', '错误次数', '收录时间'];
+            const rows = [toCSVRow(header)];
+            book.forEach(w => {
+                rows.push(toCSVRow([
+                    w.english,
+                    w.chinese,
+                    GRADE_NAMES[w.grade] || '通用',
+                    w.wrongCount || 1,
+                    w.addedAt ? new Date(w.addedAt).toLocaleString('zh-CN') : '-'
+                ]));
+            });
+            const csv = '﻿' + rows.join('\n');
+            const blob = new Blob([csv], { type: 'text/csv;charset=utf-8' });
+            downloadBlob(blob, `英语错词本_${formatDateForFile()}.csv`);
+        }
+
+        // 打印 A4 单词试卷（看中文写英文，留空填答）
+        function exportPaper() {
+            const grade = parseInt(document.getElementById('gradeSelect').value);
+            const pool = getWordPool();
+            if (pool.length === 0) {
+                alert('词汇范围为空。');
+                return;
+            }
+            const count = Math.min(parseInt(document.getElementById('countSelect').value) || 20, pool.length);
+            const qs = shuffleArray(pool).slice(0, count);
+            const gradeName = GRADE_NAMES[grade];
+            const range = document.getElementById('rangeSelect').value;
+            const rangeName = { current: '本级', cumulative: '本级及以下', all: '全部' }[range];
+            const now = new Date().toLocaleString('zh-CN');
+
+            // 题目分列排版，每行 4 题（中文长，留答题空）
+            const cols = 4;
+            let rowsHtml = '';
+            for (let i = 0; i < qs.length; i += cols) {
+                const cells = [];
+                for (let j = 0; j < cols && i + j < qs.length; j++) {
+                    const w = qs[i + j];
+                    const num = i + j + 1;
+                    cells.push(`
+                        <td>
+                            <div class="qnum">${num}.</div>
+                            <div class="qcn">${escapeHtml(w.chinese)}</div>
+                            <div class="qline">&nbsp;</div>
+                        </td>`);
+                }
+                rowsHtml += `<tr>${cells.join('')}</tr>`;
+            }
+
+            const html = `<!DOCTYPE html><html lang="zh-CN"><head><meta charset="UTF-8">
+                <title>英语单词拼写测试卷 - ${gradeName}</title>
+                <style>
+                    body { font-family: 'Microsoft YaHei', sans-serif; padding: 15px; color:#222; }
+                    h1 { text-align:center; font-size:18px; margin:0 0 4px; }
+                    .info { text-align:center; font-size:12px; color:#666; margin-bottom:12px; }
+                    table { width:100%; border-collapse:collapse; }
+                    td { border:1px solid #999; padding:8px 6px; width:25%; vertical-align:top; }
+                    .qnum { font-size:11px; color:#888; }
+                    .qcn { font-size:14px; margin:4px 0; }
+                    .qline { border-bottom:1px solid #333; min-height:22px; }
+                    .footer { margin-top:15px; font-size:11px; color:#888; display:flex; justify-content:space-between; }
+                    @page { size:A4; margin:10mm; }
+                </style></head><body>
+                <h1>📝 英语单词拼写测试卷</h1>
+                <div class="info">${gradeName} · ${rangeName}词汇 | 共 ${count} 题 | 生成时间：${now}</div>
+                <table>${rowsHtml}</table>
+                <div class="footer">
+                    <span>姓名：______________</span>
+                    <span>用时：______ 分 ______ 秒</span>
+                    <span>成绩：______ / ${count}</span>
+                </div>
+                <script>window.onload=function(){setTimeout(function(){window.print();},300);};<\/script>
+                </body></html>`;
+
+            const w = window.open('', '_blank');
+            if (!w) {
+                alert('弹出窗口被浏览器拦截，请允许弹出窗口后重试。');
+                return;
+            }
+            w.document.open();
+            w.document.write(html);
+            w.document.close();
+        }
+
+        // ============================================================
+        // 初始化
+        // ============================================================
+        window.onload = function() {
+            onGradeChange();
+            onTimerToggle();
+        };
+    </script>
+</body>
+</html>
