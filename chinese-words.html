@@ -1,0 +1,661 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>语文汉字听写 - 小学1-3年级生字练习工具 | 看拼音写汉字</title>
+    <meta name="description" content="免费小学语文生字听写练习工具：看拼音写汉字、生字听写、错字本、A4打印。覆盖人教版1-3年级常见生字，家长辅导孩子写字必备。">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        body {
+            font-family: 'Microsoft YaHei', 'SimSun', sans-serif;
+            background: #f5f5f5;
+            min-height: 100vh;
+            padding: 15px;
+            font-size: 14px;
+        }
+        .container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 8px;
+            padding: 20px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+        }
+        h1 { text-align: center; color: #333; margin-bottom: 5px; font-size: 1.5em; }
+        .subtitle { text-align: center; color: #888; margin-bottom: 15px; font-size: 12px; }
+
+        /* 配置面板 */
+        .config-panel {
+            background: #f0f7f0;
+            border: 1px solid #c8e6c8;
+            border-radius: 8px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+        .config-row {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 15px;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .config-row:last-child { margin-bottom: 0; }
+        .config-item { display: flex; flex-direction: column; gap: 4px; }
+        .config-item label { font-size: 12px; color: #666; font-weight: bold; }
+        .config-item select, .config-item input {
+            padding: 6px 10px;
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            font-size: 13px;
+            background: white;
+        }
+        .mode-checks { display: flex; gap: 12px; flex-wrap: wrap; }
+        .mode-checks label {
+            display: flex; align-items: center; gap: 5px;
+            font-size: 13px; cursor: pointer;
+            padding: 4px 8px; border-radius: 5px; transition: background 0.2s;
+        }
+        .mode-checks label:hover { background: #e8f5e8; }
+        .mode-checks input { accent-color: #4CAF50; }
+
+        .stage-indicator { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; }
+        .stage-badge { padding: 5px 15px; border-radius: 15px; font-size: 12px; font-weight: bold; background: #eee; color: #999; }
+        .stage-badge.active { background: #4CAF50; color: white; }
+        .stage-badge.completed { background: #2196F3; color: white; }
+
+        .controls { display: flex; justify-content: center; gap: 8px; margin-bottom: 15px; flex-wrap: wrap; }
+        button {
+            padding: 8px 18px; font-size: 13px; border: none; border-radius: 6px;
+            cursor: pointer; transition: all 0.2s; font-weight: bold;
+        }
+        button:disabled { opacity: 0.5; cursor: not-allowed; }
+        .btn-primary { background: #4CAF50; color: white; }
+        .btn-primary:hover:not(:disabled) { background: #43A047; }
+        .btn-secondary { background: #2196F3; color: white; }
+        .btn-secondary:hover:not(:disabled) { background: #1E88E5; }
+        .btn-warning { background: #FF9800; color: white; }
+        .btn-warning:hover:not(:disabled) { background: #F57C00; }
+        .btn-danger { background: #f44336; color: white; }
+        .btn-danger:hover:not(:disabled) { background: #D32F2F; }
+        .btn-history { background: #9C27B0; color: white; }
+        .btn-history:hover:not(:disabled) { background: #7B1FA2; }
+
+        /* 结果面板 */
+        .result-panel { display: none; background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .result-panel.show { display: block; }
+        .result-panel h2 { text-align: center; color: #333; margin-bottom: 12px; font-size: 18px; }
+        .result-summary { display: grid; grid-template-columns: repeat(4, 1fr); gap: 10px; margin-bottom: 12px; }
+        .summary-item { text-align: center; padding: 10px; background: white; border-radius: 6px; border: 1px solid #e0e0e0; }
+        .summary-number { font-size: 28px; font-weight: bold; margin-bottom: 3px; }
+        .summary-label { font-size: 11px; color: #666; }
+        .summary-correct .summary-number { color: #4CAF50; }
+        .summary-wrong .summary-number { color: #f44336; }
+        .summary-unanswered .summary-number { color: #FF9800; }
+        .summary-score .summary-number { color: #2196F3; }
+        .result-detail { background: white; padding: 10px; border-radius: 6px; border: 1px solid #e0e0e0; margin-top: 10px; }
+        .result-detail h3 { color: #333; margin-bottom: 6px; font-size: 14px; }
+        .result-detail p { color: #666; font-size: 12px; line-height: 1.5; }
+
+        /* 题目网格 */
+        .questions-grid { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 15px; }
+        .question-item {
+            background: #fafafa; padding: 10px; border-radius: 5px;
+            border: 1px solid #e0e0e0; transition: all 0.2s;
+            display: flex; flex-direction: column; gap: 6px;
+        }
+        .question-item.correct { background: #E8F5E9; border-color: #4CAF50; }
+        .question-item.wrong { background: #FFEBEE; border-color: #f44336; }
+        .question-top { display: flex; align-items: center; gap: 6px; }
+        .question-number { background: #666; color: white; width: 22px; height: 22px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 10px; font-weight: bold; flex-shrink: 0; }
+        .question-item.correct .question-number { background: #4CAF50; }
+        .question-item.wrong .question-number { background: #f44336; }
+        .pinyin { font-size: 18px; color: #2196F3; font-weight: bold; flex: 1; }
+        .answer-input {
+            width: 100%; padding: 6px; border: 1px solid #ccc; border-radius: 4px;
+            font-size: 16px; text-align: center; transition: border-color 0.2s;
+            font-family: 'SimSun', serif;
+        }
+        .answer-input:focus { outline: none; border-color: #4CAF50; }
+        .answer-input:disabled { background: #f0f0f0; color: #333; }
+
+        /* 订正区 */
+        .correction-section { display: none; background: #FFF3E0; border: 1px solid #FF9800; border-radius: 8px; padding: 15px; margin-bottom: 15px; }
+        .correction-section.show { display: block; }
+        .correction-section h2 { color: #E65100; margin-bottom: 10px; text-align: center; font-size: 16px; }
+        .correction-info { text-align: center; color: #666; margin-bottom: 12px; font-size: 13px; }
+        .correction-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 8px; }
+        .correction-item { background: white; padding: 8px 10px; border-radius: 5px; border: 1px solid #FFB74D; display: flex; flex-direction: column; gap: 4px; }
+        .correction-item.corrected { background: #E8F5E9; border-color: #4CAF50; }
+        .correction-item .wrong-info { color: #f44336; font-size: 11px; }
+
+        .celebration { display: none; background: linear-gradient(135deg, #4CAF50, #8BC34A); color: white; padding: 25px; border-radius: 8px; text-align: center; margin-bottom: 15px; }
+        .celebration.show { display: block; animation: celebrate 0.5s ease; }
+        @keyframes celebrate { 0% { transform: scale(0.8); opacity: 0; } 100% { transform: scale(1); opacity: 1; } }
+        .celebration h2 { font-size: 22px; margin-bottom: 10px; }
+        .celebration p { font-size: 14px; opacity: 0.9; }
+
+        /* 模态框 */
+        .modal { display: none; position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(0,0,0,0.5); z-index: 1000; justify-content: center; align-items: center; }
+        .modal.show { display: flex; }
+        .modal-content { background: white; border-radius: 8px; padding: 20px; max-width: 700px; max-height: 80vh; overflow-y: auto; width: 90%; }
+        .modal-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; padding-bottom: 10px; border-bottom: 1px solid #e0e0e0; }
+        .modal-header h2 { color: #333; font-size: 18px; }
+        .modal-close { background: none; border: none; font-size: 22px; cursor: pointer; color: #999; padding: 0; }
+        .history-item { background: #f9f9f9; border: 1px solid #e0e0e0; border-radius: 6px; padding: 12px; margin-bottom: 10px; }
+        .history-header { display: flex; justify-content: space-between; align-items: center; margin-bottom: 8px; }
+        .history-date { font-weight: bold; color: #333; font-size: 13px; }
+        .history-score { font-size: 16px; font-weight: bold; }
+        .history-stats { display: flex; gap: 15px; font-size: 12px; color: #666; flex-wrap: wrap; }
+        .wrong-word { font-size: 12px; color: #666; padding: 2px 0; }
+        .wrong-word span { color: #f44336; }
+        .no-history { text-align: center; color: #999; padding: 30px; }
+
+        .timer-bar { display: none; background: #FFF3E0; border: 1px solid #FF9800; border-radius: 6px; padding: 10px; text-align: center; margin-bottom: 15px; font-size: 14px; font-weight: bold; }
+        .timer-bar.show { display: block; }
+        .timer-bar.urgent { background: #FFEBEE; border-color: #f44336; color: #f44336; animation: pulse 1s infinite; }
+        @keyframes pulse { 50% { opacity: 0.6; } }
+
+        /* 打印 */
+        @media print {
+            body { background: white; padding: 0; font-size: 12px; }
+            .container { box-shadow: none; padding: 10px; max-width: 100%; }
+            .config-panel, .stage-indicator, .controls, .result-panel, .correction-section, .celebration, .modal, .timer-bar { display: none !important; }
+            .questions-grid { grid-template-columns: repeat(5, 1fr); gap: 6px; }
+            .question-item { padding: 8px; border: 1px solid #999; background: white; break-inside: avoid; }
+            .answer-input { border: 1px solid #999; background: white; }
+            @page { size: A4; margin: 10mm; }
+        }
+        @media (max-width: 768px) {
+            .questions-grid { grid-template-columns: repeat(2, 1fr); }
+            .result-summary { grid-template-columns: repeat(2, 1fr); }
+            .controls { flex-direction: column; align-items: stretch; }
+            button { width: 100%; }
+            .config-row { flex-direction: column; align-items: stretch; }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>📝 语文生字听写</h1>
+        <p class="subtitle">看拼音写汉字 | 人教版1-3年级常见生字</p>
+
+        <div class="config-panel">
+            <div class="config-row">
+                <div class="config-item">
+                    <label>📚 年级</label>
+                    <select id="gradeSelect">
+                        <option value="1">一年级（基础字）</option>
+                        <option value="2">二年级（常用字）</option>
+                        <option value="3" selected>三年级（进阶字）</option>
+                    </select>
+                </div>
+                <div class="config-item">
+                    <label>🔢 题量</label>
+                    <select id="countSelect">
+                        <option value="20">20字</option>
+                        <option value="50" selected>50字</option>
+                        <option value="100">100字</option>
+                    </select>
+                </div>
+                <div class="config-item">
+                    <label>⏱️ 限时</label>
+                    <select id="timerSelect">
+                        <option value="0">不限时</option>
+                        <option value="5">5分钟</option>
+                        <option value="10" selected>10分钟</option>
+                        <option value="15">15分钟</option>
+                    </select>
+                </div>
+                <div class="config-item">
+                    <label>🔊 模式</label>
+                    <div class="mode-checks">
+                        <label><input type="checkbox" id="modeListen" checked> 听写</label>
+                        <label><input type="checkbox" id="modePinyin" checked> 看拼音</label>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="timer-bar" id="timerBar"></div>
+
+        <div class="stage-indicator">
+            <span class="stage-badge active" id="stage1">1. 听写</span>
+            <span class="stage-badge" id="stage2">2. 批改</span>
+            <span class="stage-badge" id="stage3">3. 订正</span>
+        </div>
+
+        <div class="controls">
+            <button class="btn-primary" onclick="startNewPractice()">🔄 新练习</button>
+            <button class="btn-secondary" id="btnSubmit" onclick="submitAnswers()">✅ 提交批改</button>
+            <button class="btn-warning" id="btnCorrect" onclick="startCorrection()" style="display:none;">📝 开始订正</button>
+            <button class="btn-secondary" id="btnSubmitCorrection" onclick="submitCorrection()" style="display:none;">✅ 提交订正</button>
+            <button class="btn-danger" onclick="clearAnswers()">🗑️ 清空</button>
+            <button class="btn-history" onclick="showHistory()">📚 历史</button>
+            <button class="btn-secondary" onclick="speakAll()">🔊 朗读全部</button>
+            <button class="btn-secondary" onclick="window.print()">🖨️ 打印</button>
+        </div>
+
+        <div class="result-panel" id="resultPanel">
+            <h2>📊 批改结果</h2>
+            <div class="result-summary">
+                <div class="summary-item summary-correct"><div class="summary-number" id="correctCount">0</div><div class="summary-label">正确</div></div>
+                <div class="summary-item summary-wrong"><div class="summary-number" id="wrongCount">0</div><div class="summary-label">错误</div></div>
+                <div class="summary-item summary-unanswered"><div class="summary-number" id="unansweredCount">0</div><div class="summary-label">未答</div></div>
+                <div class="summary-item summary-score"><div class="summary-number" id="scoreText">0</div><div class="summary-label">正确率%</div></div>
+            </div>
+            <div class="result-detail" id="resultDetail"></div>
+        </div>
+
+        <div class="correction-section" id="correctionSection">
+            <h2>✏️ 错字订正</h2>
+            <div class="correction-info" id="correctionInfo"></div>
+            <div class="correction-grid" id="correctionGrid"></div>
+        </div>
+
+        <div class="celebration" id="celebration">
+            <h2>🎉 太棒了！全部订正完成！</h2>
+            <p id="celebrationText">所有错字都已正确订正，继续保持！</p>
+        </div>
+
+        <div class="questions-grid" id="questionsGrid"></div>
+    </div>
+
+    <div class="modal" id="historyModal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📚 历史记录</h2>
+                <button class="modal-close" onclick="closeHistory()">&times;</button>
+            </div>
+            <div id="historyList"></div>
+        </div>
+    </div>
+
+    <script>
+        // ===== 生字库（人教版小学1-3年级常见生字，含拼音）=====
+        const WORD_BANK = {
+            '1': [
+                {p:'rén',w:'人'},{p:'kǒu',w:'口'},{p:'shǒu',w:'手'},{p:'zú',w:'足'},{p:'mù',w:'目'},{p:'ěr',w:'耳'},{p:'shé',w:'舌'},{p:'yá',w:'牙'},
+                {p:'shān',w:'山'},{p:'shuǐ',w:'水'},{p:'huǒ',w:'火'},{p:'tǔ',w:'土'},{p:'tián',w:'田'},{p:'shí',w:'石'},{p:'mù',w:'木'},{p:'hé',w:'禾'},
+                {p:'rì',w:'日'},{p:'yuè',w:'月'},{p:'xīng',w:'星'},{p:'guāng',w:'光'},{p:'dà',w:'大'},{p:'xiǎo',w:'小'},{p:'shàng',w:'上'},{p:'xià',w:'下'},
+                {p:'zuǒ',w:'左'},{p:'yòu',w:'右'},{p:'qián',w:'前'},{p:'hòu',w:'后'},{p:'dōng',w:'东'},{p:'xī',w:'西'},{p:'nán',w:'南'},{p:'běi',w:'北'},
+                {p:'chūn',w:'春'},{p:'xià',w:'夏'},{p:'qiū',w:'秋'},{p:'dōng',w:'冬'},{p:'fēng',w:'风'},{p:'yǔ',w:'雨'},{p:'yún',w:'云'},{p:'diàn',w:'电'},
+                {p:'mā',w:'妈'},{p:'bà',w:'爸'},{p:'gē',w:'哥'},{p:'dì',w:'弟'},{p:'jiě',w:'姐'},{p:'mèi',w:'妹'},{p:'yé',w:'爷'},{p:'nǎi',w:'奶'},
+                {p:'niú',w:'牛'},{p:'yáng',w:'羊'},{p:'mǎ',w:'马'},{p:'zhū',w:'猪'},{p:'gǒu',w:'狗'},{p:'māo',w:'猫'},{p:'jī',w:'鸡'},{p:'yā',w:'鸭'},
+                {p:'huā',w:'花'},{p:'cǎo',w:'草'},{p:'shù',w:'树'},{p:'yè',w:'叶'},{p:'guǒ',w:'果'},{p:'mǐ',w:'米'},{p:'dòu',w:'豆'},{p:'guā',w:'瓜'},
+                {p:'chē',w:'车'},{p:'chuán',w:'船'},{p:'fēi',w:'飞'},{p:'zǒu',w:'走'},{p:'pǎo',w:'跑'},{p:'tīng',w:'听'},{p:'shuō',w:'说'},{p:'kàn',w:'看'},
+                {p:'chī',w:'吃'},{p:'hē',w:'喝'},{p:'wán',w:'玩'},{p:'xiào',w:'笑'},{p:'kū',w:'哭'},{p:'ài',w:'爱'},{p:'hǎo',w:'好'},{p:'duō',w:'多'}
+            ],
+            '2': [
+                {p:'kuài',w:'快'},{p:'màn',w:'慢'},{p:'gāo',w:'高'},{p:'dī',w:'低'},{p:'cháng',w:'长'},{p:'duǎn',w:'短'},{p:'yuǎn',w:'远'},{p:'jìn',w:'近'},
+                {p:'míng',w:'明'},{p:'àn',w:'暗'},{p:'lěng',w:'冷'},{p:'rè',w:'热'},{p:'zǎo',w:'早'},{p:'wǎn',w:'晚'},{p:'xīn',w:'新'},{p:'jiù',w:'旧'},
+                {p:'kōng',w:'空'},{p:'mǎn',w:'满'},{p:'qīng',w:'轻'},{p:'zhòng',w:'重'},{p:'hēi',w:'黑'},{p:'bái',w:'白'},{p:'hóng',w:'红'},{p:'huáng',w:'黄'},
+                {p:'lán',w:'蓝'},{p:'lǜ',w:'绿'},{p:'zǐ',w:'紫'},{p:'fěn',w:'粉'},{p:'huī',w:'灰'},{p:'jīn',w:'金'},{p:'yín',w:'银'},{p:'tiě',w:'铁'},
+                {p:'xué',w:'学'},{p:'xiào',w:'校'},{p:'lǎo',w:'老'},{p:'shī',w:'师'},{p:'tóng',w:'同'},{p:'xué',w:'学'},{p:'kè',w:'课'},{p:'běn',w:'本'},
+                {p:'zì',w:'字'},{p:'cí',w:'词'},{p:'jù',w:'句'},{p:'duàn',w:'段'},{p:'luò',w:'落'},{p:'zhāng',w:'章'},{p:'jié',w:'节'},{p:'piān',w:'篇'},
+                {p:'yī',w:'衣'},{p:'fú',w:'服'},{p:'xié',w:'鞋'},{p:'mào',w:'帽'},{p:'kù',w:'裤'},{p:'wà',w:'袜'},{p:'bāo',w:'包'},{p:'sǎn',w:'伞'},
+                {p:'fàn',w:'饭'},{p:'cài',w:'菜'},{p:'tāng',w:'汤'},{p:'miàn',w:'面'},{p:'bǐng',w:'饼'},{p:'gāo',w:'糕'},{p:'táng',w:'糖'},{p:'chá',w:'茶'},
+                {p:'jiā',w:'家'},{p:'tíng',w:'庭'},{p:'fáng',w:'房'},{p:'jiān',w:'间'},{p:'mén',w:'门'},{p:'chuāng',w:'窗'},{p:'zhuō',w:'桌'},{p:'yǐ',w:'椅'},
+                {p:'chuáng',w:'床'},{p:'guì',w:'柜'},{p:'dēng',w:'灯'},{p:'zhōng',w:'钟'},{p:'biǎo',w:'表'},{p:'jìng',w:'镜'},{p:'shū',w:'书'},{p:'bǐ',w:'笔'}
+            ],
+            '3': [
+                {p:'sī',w:'思'},{p:'xiǎng',w:'想'},{p:'niàn',w:'念'},{p:'jì',w:'记'},{p:'wàng',w:'忘'},{p:'zhī',w:'知'},{p:'dào',w:'道'},{p:'lǐ',w:'理'},
+                {p:'gǎn',w:'感'},{p:'jué',w:'觉'},{p:'xǐ',w:'喜'},{p:'huān',w:'欢'},{p:'nǎo',w:'恼'},{p:'nù',w:'怒'},{p:'bēi',w:'悲'},{p:'lè',w:'乐'},
+                {p:'měi',w:'美'},{p:'lì',w:'丽'},{p:'chǒu',w:'丑'},{p:'è',w:'恶'},{p:'shàn',w:'善'},{p:'liáng',w:'良'},{p:'zhēn',w:'真'},{p:'jiǎ',w:'假'},
+                {p:'chéng',w:'城'},{p:'shì',w:'市'},{p:'xiāng',w:'乡'},{p:'cūn',w:'村'},{p:'zhèn',w:'镇'},{p:'jiē',w:'街'},{p:'dào',w:'道'},{p:'lù',w:'路'},
+                {p:'qiáo',w:'桥'},{p:'hé',w:'河'},{p:'hǎi',w:'海'},{p:'yáng',w:'洋'},{p:'hú',w:'湖'},{p:'chí',w:'池'},{p:'quán',w:'泉'},{p:'xī',w:'溪'},
+                {p:'sēn',w:'森'},{p:'lín',w:'林'},{p:'yuán',w:'原'},{p:'yě',w:'野'},{p:'gǔ',w:'谷'},{p:'fēng',w:'峰'},{p:'lǐng',w:'岭'},{p:'pō',w:'坡'},
+                {p:'guó',w:'国'},{p:'jiā',w:'家'},{p:'shì',w:'世'},{p:'jiè',w:'界'},{p:'dì',w:'地'},{p:'fāng',w:'方'},{p:'chǔ',w:'处'},{p:'suǒ',w:'所'},
+                {p:'yī',w:'医'},{p:'yuàn',w:'院'},{p:'yín',w:'银'},{p:'háng',w:'行'},{p:'shāng',w:'商'},{p:'diàn',w:'店'},{p:'jú',w:'局'},{p:'suǒ',w:'所'},
+                {p:'kē',w:'科'},{p:'xué',w:'学'},{p:'jì',w:'技'},{p:'shù',w:'术'},{p:'wén',w:'文'},{p:'huà',w:'化'},{p:'yì',w:'艺'},{p:'shù',w:'术'},
+                {p:'lì',w:'历'},{p:'shǐ',w:'史'},{p:'dì',w:'地'},{p:'lǐ',w:'理'},{p:'zhèng',w:'政'},{p:'zhì',w:'治'},{p:'jīng',w:'经'},{p:'jì',w:'济'},
+                {p:'yùn',w:'运'},{p:'dòng',w:'动'},{p:'bǐ',w:'比'},{p:'sài',w:'赛'},{p:'yíng',w:'赢'},{p:'shū',w:'输'},{p:'shèng',w:'胜'},{p:'fù',w:'负'}
+            ]
+        };
+
+        // 状态
+        let questions = [];
+        let userAnswers = [];
+        let wrongQuestions = [];
+        let currentStage = 'practice';
+        let practiceStartTime = null;
+        let practiceEndTime = null;
+        let correctionRound = 0;
+        let timerInterval = null;
+        let timerTotalSeconds = 0;
+        let timerRemainingSeconds = 0;
+
+        function shuffleArray(arr) {
+            const a = [...arr];
+            for (let i = a.length - 1; i > 0; i--) {
+                const j = Math.floor(Math.random() * (i + 1));
+                [a[i], a[j]] = [a[j], a[i]];
+            }
+            return a;
+        }
+
+        function generateQuestions() {
+            const grade = document.getElementById('gradeSelect').value;
+            const count = parseInt(document.getElementById('countSelect').value);
+            const bank = WORD_BANK[grade] || WORD_BANK['3'];
+            // 去重：同拼音可能对应多字，按"拼音+字"组合去重
+            const unique = [];
+            const seen = new Set();
+            for (const w of bank) {
+                const key = w.p + '|' + w.w;
+                if (!seen.has(key)) { seen.add(key); unique.push(w); }
+            }
+            questions = shuffleArray(unique).slice(0, Math.min(count, unique.length));
+            userAnswers = new Array(questions.length).fill(null);
+        }
+
+        function renderQuestions() {
+            const grid = document.getElementById('questionsGrid');
+            grid.innerHTML = '';
+            const showPinyin = document.getElementById('modePinyin').checked;
+            const listenMode = document.getElementById('modeListen').checked;
+            questions.forEach((q, index) => {
+                const item = document.createElement('div');
+                item.className = 'question-item';
+                item.id = `question-${index}`;
+                const pinyinDisplay = showPinyin ? q.p : (listenMode ? '🔊' : '？');
+                item.innerHTML = `
+                    <div class="question-top">
+                        <div class="question-number">${index + 1}</div>
+                        <div class="pinyin" data-pinyin="${q.p}">${pinyinDisplay}</div>
+                    </div>
+                    <input type="text" class="answer-input" id="answer-${index}"
+                           placeholder="写汉字" onchange="saveAnswer(${index})"
+                           onkeypress="handleEnter(event, ${index})">
+                    ${listenMode ? `<button class="btn-secondary" style="padding:2px 8px;font-size:11px;width:100%;" onclick="speak('${q.p}', ${index})">🔊 朗读</button>` : ''}
+                `;
+                grid.appendChild(item);
+            });
+            const first = document.getElementById('answer-0');
+            if (first) first.focus();
+        }
+
+        function saveAnswer(index) {
+            const input = document.getElementById(`answer-${index}`);
+            userAnswers[index] = input.value.trim();
+        }
+
+        function handleEnter(e, idx) {
+            if (e.key === 'Enter') {
+                e.preventDefault();
+                saveAnswer(idx);
+                const next = idx + 1;
+                if (next < questions.length) document.getElementById(`answer-${next}`)?.focus();
+                else submitAnswers();
+            }
+        }
+
+        // 朗读功能（Web Speech API）
+        function speak(pinyin, index) {
+            if (!('speechSynthesis' in window)) { alert('浏览器不支持语音朗读'); return; }
+            // 用拼音近似朗读（中文 TTS 读拼音效果有限，部分浏览器可读）
+            // 更好：朗读对应的汉字，但听写模式应隐藏答案。这里朗读拼音字母。
+            const u = new SpeechSynthesisUtterance(pinyin);
+            u.lang = 'zh-CN';
+            u.rate = 0.7;
+            speechSynthesis.cancel();
+            speechSynthesis.speak(u);
+        }
+
+        function speakAll() {
+            if (!('speechSynthesis' in window)) { alert('浏览器不支持语音'); return; }
+            let i = 0;
+            function next() {
+                if (i >= questions.length) return;
+                const u = new SpeechSynthesisUtterance(questions[i].p);
+                u.lang = 'zh-CN'; u.rate = 0.6;
+                u.onend = () => { i++; setTimeout(next, 800); };
+                speechSynthesis.cancel();
+                speechSynthesis.speak(u);
+            }
+            next();
+        }
+
+        function startTimer(minutes) {
+            if (timerInterval) clearInterval(timerInterval);
+            timerTotalSeconds = minutes * 60;
+            timerRemainingSeconds = timerTotalSeconds;
+            const bar = document.getElementById('timerBar');
+            bar.classList.add('show');
+            bar.classList.remove('urgent');
+            updateTimerDisplay();
+            timerInterval = setInterval(() => {
+                timerRemainingSeconds--;
+                updateTimerDisplay();
+                if (timerRemainingSeconds <= 60) bar.classList.add('urgent');
+                if (timerRemainingSeconds <= 0) {
+                    clearInterval(timerInterval);
+                    if (currentStage === 'practice') {
+                        alert('⏰ 时间到！自动提交批改。');
+                        submitAnswers();
+                    }
+                }
+            }, 1000);
+        }
+
+        function updateTimerDisplay() {
+            const m = Math.floor(timerRemainingSeconds / 60);
+            const s = timerRemainingSeconds % 60;
+            document.getElementById('timerBar').textContent = `⏱️ 剩余时间：${m}:${s.toString().padStart(2,'0')}`;
+        }
+
+        function startNewPractice() {
+            generateQuestions();
+            renderQuestions();
+            resetUI();
+            practiceStartTime = new Date();
+            currentStage = 'practice';
+            correctionRound = 0;
+            updateStageIndicator();
+            const timerMin = parseInt(document.getElementById('timerSelect').value);
+            if (timerMin > 0) startTimer(timerMin);
+            else { document.getElementById('timerBar').classList.remove('show'); if(timerInterval) clearInterval(timerInterval); }
+        }
+
+        function resetUI() {
+            document.getElementById('resultPanel').classList.remove('show');
+            document.getElementById('correctionSection').classList.remove('show');
+            document.getElementById('celebration').classList.remove('show');
+            document.getElementById('questionsGrid').style.display = 'grid';
+            document.getElementById('btnSubmit').style.display = 'inline-block';
+            document.getElementById('btnSubmit').disabled = false;
+            document.getElementById('btnCorrect').style.display = 'none';
+            document.getElementById('btnSubmitCorrection').style.display = 'none';
+        }
+
+        function updateStageIndicator() {
+            ['stage1','stage2','stage3'].forEach((s, i) => {
+                const el = document.getElementById(s);
+                el.classList.remove('active','completed');
+                if (currentStage === 'practice' && i === 0) el.classList.add('active');
+                else if (currentStage === 'review' && i === 1) el.classList.add('active');
+                else if (currentStage === 'correction' && i === 2) el.classList.add('active');
+                else if ((currentStage === 'review' && i === 0) || (currentStage === 'correction' && i < 2)) el.classList.add('completed');
+            });
+        }
+
+        function submitAnswers() {
+            practiceEndTime = new Date();
+            if (timerInterval) { clearInterval(timerInterval); document.getElementById('timerBar').classList.remove('show'); }
+            let correctCount = 0, wrongCount = 0, unansweredCount = 0;
+            wrongQuestions = [];
+            questions.forEach((q, index) => {
+                const item = document.getElementById(`question-${index}`);
+                const input = document.getElementById(`answer-${index}`);
+                const ua = (userAnswers[index] !== null ? userAnswers[index] : (input ? input.value.trim() : ''));
+                item.classList.remove('correct','wrong');
+                if (!ua) {
+                    unansweredCount++; wrongCount++;
+                    item.classList.add('wrong');
+                    wrongQuestions.push({index, question: q, userAnswer: '未作答', correctAnswer: q.w});
+                    input.disabled = true;
+                    input.value = `×${q.w}`;
+                } else if (ua === q.w) {
+                    correctCount++;
+                    item.classList.add('correct');
+                    input.disabled = true;
+                } else {
+                    wrongCount++;
+                    item.classList.add('wrong');
+                    wrongQuestions.push({index, question: q, userAnswer: ua, correctAnswer: q.w});
+                    input.disabled = true;
+                    input.value = `${ua}×`;
+                }
+            });
+            currentStage = 'review';
+            updateStageIndicator();
+            const total = questions.length;
+            const correctRate = Math.round(correctCount / total * 100);
+            document.getElementById('correctCount').textContent = correctCount;
+            document.getElementById('wrongCount').textContent = wrongCount;
+            document.getElementById('unansweredCount').textContent = unansweredCount;
+            document.getElementById('scoreText').textContent = correctRate;
+            const minutes = Math.max(1, Math.round((practiceEndTime - practiceStartTime) / 60000));
+            let html = `<h3>📋 答题统计</h3><p>用时：约 ${minutes} 分钟 | 正确率：${correctRate}% | 错字：${wrongCount} 个</p>`;
+            if (wrongQuestions.length > 0) html += `<p style="color:#f44336;">⚠️ 有 ${wrongQuestions.length} 个错字需要订正</p>`;
+            else html += `<p style="color:#4CAF50;">🎉 全部正确！</p>`;
+            document.getElementById('resultDetail').innerHTML = html;
+            document.getElementById('resultPanel').classList.add('show');
+            saveToHistory(correctCount, wrongCount, unansweredCount, correctRate, minutes);
+            document.getElementById('btnSubmit').disabled = true;
+            if (wrongQuestions.length > 0) document.getElementById('btnCorrect').style.display = 'inline-block';
+            window.scrollTo({top:0, behavior:'smooth'});
+        }
+
+        function startCorrection() {
+            correctionRound++;
+            currentStage = 'correction';
+            updateStageIndicator();
+            document.getElementById('questionsGrid').style.display = 'none';
+            document.getElementById('correctionSection').classList.add('show');
+            document.getElementById('celebration').classList.remove('show');
+            document.getElementById('btnCorrect').style.display = 'none';
+            document.getElementById('btnSubmitCorrection').style.display = 'inline-block';
+            document.getElementById('correctionInfo').innerHTML = `第 <strong>${correctionRound}</strong> 轮订正，共 <strong>${wrongQuestions.length}</strong> 个错字`;
+            renderCorrection();
+        }
+
+        function renderCorrection() {
+            const grid = document.getElementById('correctionGrid');
+            grid.innerHTML = '';
+            wrongQuestions.forEach((wq) => {
+                const item = document.createElement('div');
+                item.className = 'correction-item';
+                item.id = `correction-${wq.index}`;
+                item.innerHTML = `
+                    <div class="wrong-info"><s>${wq.userAnswer}</s> → 正确：${wq.correctAnswer}</div>
+                    <div class="pinyin">${wq.question.p}</div>
+                    <input type="text" class="answer-input" id="correction-answer-${wq.index}" placeholder="订正">
+                `;
+                grid.appendChild(item);
+            });
+            const first = document.getElementById(`correction-answer-${wrongQuestions[0].index}`);
+            if (first) first.focus();
+        }
+
+        function submitCorrection() {
+            let stillWrong = [];
+            wrongQuestions.forEach((wq) => {
+                const input = document.getElementById(`correction-answer-${wq.index}`);
+                const item = document.getElementById(`correction-${wq.index}`);
+                const na = input.value.trim();
+                item.classList.remove('corrected');
+                if (na === wq.correctAnswer) {
+                    item.classList.add('corrected');
+                    input.disabled = true;
+                    input.style.borderColor = '#4CAF50';
+                } else {
+                    stillWrong.push({...wq, userAnswer: na || '未订正'});
+                    input.disabled = true;
+                    input.value = `${na||'×'}→${wq.correctAnswer}`;
+                }
+            });
+            if (stillWrong.length === 0) {
+                document.getElementById('btnSubmitCorrection').style.display = 'none';
+                document.getElementById('celebration').classList.add('show');
+                document.getElementById('celebrationText').textContent = `经过 ${correctionRound} 轮订正，所有错字都已正确订正！`;
+                updateHistoryWithCorrection(correctionRound);
+                currentStage = 'review';
+                updateStageIndicator();
+            } else {
+                wrongQuestions = stillWrong;
+                document.getElementById('correctionInfo').innerHTML = `第 <strong>${correctionRound}</strong> 轮完成，还有 <strong style="color:#f44336;">${stillWrong.length}</strong> 个错字`;
+                document.getElementById('btnSubmitCorrection').textContent = '📝 继续订正';
+                document.getElementById('btnSubmitCorrection').onclick = continueCorrection;
+            }
+        }
+
+        function continueCorrection() {
+            correctionRound++;
+            document.getElementById('correctionInfo').innerHTML = `第 <strong>${correctionRound}</strong> 轮订正，还有 <strong>${wrongQuestions.length}</strong> 个错字`;
+            renderCorrection();
+            document.getElementById('btnSubmitCorrection').textContent = '✅ 提交订正';
+            document.getElementById('btnSubmitCorrection').onclick = submitCorrection;
+        }
+
+        function clearAnswers() {
+            if (currentStage !== 'practice') return;
+            questions.forEach((q, index) => {
+                const input = document.getElementById(`answer-${index}`);
+                const item = document.getElementById(`question-${index}`);
+                if (input) { input.value=''; input.disabled=false; }
+                if (item) item.classList.remove('correct','wrong');
+            });
+            userAnswers = new Array(questions.length).fill(null);
+        }
+
+        function saveToHistory(correct, wrong, unanswered, correctRate, minutes) {
+            const h = JSON.parse(localStorage.getItem('chineseWordsHistory') || '[]');
+            h.unshift({
+                id: Date.now(), date: new Date().toLocaleString('zh-CN'),
+                correct, wrong, unanswered, correctRate, score: correctRate, minutes,
+                grade: document.getElementById('gradeSelect').value,
+                wrongWords: wrongQuestions.map(wq => ({p: wq.question.p, user: wq.userAnswer, correct: wq.correctAnswer})),
+                correctionRounds: 0, fullyCorrected: wrongQuestions.length === 0
+            });
+            if (h.length > 20) h.pop();
+            localStorage.setItem('chineseWordsHistory', JSON.stringify(h));
+        }
+
+        function updateHistoryWithCorrection(rounds) {
+            const h = JSON.parse(localStorage.getItem('chineseWordsHistory') || '[]');
+            if (h.length > 0) {
+                h[0].correctionRounds = rounds;
+                h[0].fullyCorrected = true;
+                localStorage.setItem('chineseWordsHistory', JSON.stringify(h));
+            }
+        }
+
+        function showHistory() {
+            const h = JSON.parse(localStorage.getItem('chineseWordsHistory') || '[]');
+            const list = document.getElementById('historyList');
+            if (h.length === 0) { list.innerHTML = '<div class="no-history">暂无历史记录</div>'; }
+            else {
+                list.innerHTML = h.map(r => `
+                    <div class="history-item">
+                        <div class="history-header">
+                            <span class="history-date">${r.date} · ${r.grade||'?'}年级</span>
+                            <span class="history-score" style="color:${r.correctRate>=90?'#4CAF50':r.correctRate>=60?'#FF9800':'#f44336'}">${r.correctRate||r.score}%</span>
+                        </div>
+                        <div class="history-stats">
+                            <span>✅${r.correct}</span><span>❌${r.wrong}</span><span>⏱️${r.minutes}分钟</span>
+                            ${r.fullyCorrected ? (r.correctionRounds>0?`<span style="color:#4CAF50;">📝已订正(${r.correctionRounds}轮)</span>`:`<span style="color:#4CAF50;">🎉首次全对</span>`) : `<span style="color:#f44336;">⚠️未完成</span>`}
+                        </div>
+                        ${r.wrongWords && r.wrongWords.length>0 ? `<div style="margin-top:8px;padding-top:8px;border-top:1px solid #e0e0e0;"><h4 style="color:#f44336;font-size:12px;margin-bottom:4px;">❌ 错字：</h4>${r.wrongWords.map(w=>`<div class="wrong-word">${w.p}：<s>${w.user}</s> → ${w.correct}</div>`).join('')}</div>` : ''}
+                    </div>`).join('');
+            }
+            document.getElementById('historyModal').classList.add('show');
+        }
+
+        function closeHistory() { document.getElementById('historyModal').classList.remove('show'); }
+        document.getElementById('historyModal').addEventListener('click', function(e){ if(e.target===this) closeHistory(); });
+
+        window.onload = function() { startNewPractice(); };
+    </script>
+</body>
+</html>
