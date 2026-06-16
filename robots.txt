@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://limin6661.github.io/edu-tools-kit/sitemap.xml

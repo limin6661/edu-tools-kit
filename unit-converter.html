@@ -1,0 +1,228 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>单位换算器 · 长度/重量/面积/温度/时间/数据 · 免费在线 | 打开即用</title>
+<meta name="description" content="免费在线单位换算器：支持长度、重量、面积、温度、时间、数据存储 6 大类互相换算。米/千米/英里、克/千克/磅、摄氏/华氏、秒/分/时、字节/KB/MB/GB 实时换算。无需安装，打开即用。">
+<meta name="keywords" content="单位换算,单位换算器,长度换算,重量换算,面积换算,温度换算,时间换算,数据换算,米换算英尺,千克换算磅,摄氏换算华氏,免费在线工具">
+<link rel="canonical" href="https://limin6661.github.io/edu-tools-kit/unit-converter.html">
+<meta property="og:type" content="website">
+<meta property="og:title" content="单位换算器 · 6大类实时换算（免费·打开即用）">
+<meta property="og:description" content="长度/重量/面积/温度/时间/数据 一键换算。永久免费，手机电脑都能用。">
+<meta property="og:url" content="https://limin6661.github.io/edu-tools-kit/unit-converter.html">
+<meta property="og:image" content="https://limin6661.github.io/edu-tools-kit/og-cover.png">
+<script type="application/ld+json">
+{
+  "@context":"https://schema.org",
+  "@type":"WebApplication",
+  "name":"单位换算器",
+  "url":"https://limin6661.github.io/edu-tools-kit/unit-converter.html",
+  "applicationCategory":"UtilityApplication",
+  "operatingSystem":"Web Browser",
+  "inLanguage":"zh-CN",
+  "isAccessibleForFree":true,
+  "offers":{"@type":"Offer","price":"0","priceCurrency":"CNY"},
+  "featureList":["长度换算","重量换算","面积换算","温度换算","时间换算","数据存储换算"]
+}
+</script>
+<style>
+*{box-sizing:border-box;margin:0;padding:0}
+body{font-family:-apple-system,BlinkMacSystemFont,"Segoe UI","PingFang SC","Microsoft YaHei",sans-serif;background:#f4f6f5;color:#222;line-height:1.6}
+.topbar{background:linear-gradient(135deg,#4CAF50,#2E7D32);color:#fff;padding:14px 20px;text-align:center;font-size:14px}
+.topbar a{color:#fff;text-decoration:underline}
+.container{max-width:760px;margin:0 auto;padding:20px}
+h1{font-size:26px;text-align:center;margin:18px 0 6px;color:#1b5e20}
+.subtitle{text-align:center;color:#666;font-size:14px;margin-bottom:24px}
+.tabs{display:flex;flex-wrap:wrap;gap:8px;justify-content:center;margin-bottom:24px}
+.tab{padding:10px 18px;background:#fff;border:2px solid #e0e0e0;border-radius:24px;cursor:pointer;font-size:14px;font-weight:500;transition:all .2s;color:#444}
+.tab.active{background:#4CAF50;color:#fff;border-color:#4CAF50}
+.tab:hover:not(.active){border-color:#4CAF50}
+.converter-card{background:#fff;border-radius:14px;padding:24px;box-shadow:0 2px 12px rgba(0,0,0,.06)}
+.row{display:flex;gap:12px;align-items:center;margin-bottom:14px;flex-wrap:wrap}
+.field{flex:1;min-width:140px}
+.field label{display:block;font-size:12px;color:#888;margin-bottom:4px}
+.field input,.field select{width:100%;padding:12px 14px;border:2px solid #e0e0e0;border-radius:8px;font-size:16px;outline:none;transition:border .2s}
+.field input:focus,.field select:focus{border-color:#4CAF50}
+.swap{background:#e8f5e9;border:none;width:44px;height:44px;border-radius:50%;cursor:pointer;font-size:18px;color:#2E7D32;flex-shrink:0}
+.swap:hover{background:#c8e6c9}
+.result{background:#f1f8e9;border-radius:8px;padding:14px;margin-top:14px;text-align:center;font-size:15px;color:#33691e}
+.result b{font-size:22px;color:#1b5e20}
+.quick{display:flex;flex-wrap:wrap;gap:8px;margin-top:18px;justify-content:center}
+.quick span{background:#fff3e0;color:#e65100;padding:6px 12px;border-radius:16px;font-size:12px;border:1px solid #ffe0b2}
+.footer{text-align:center;padding:30px 20px 20px;color:#999;font-size:13px}
+.footer a{color:#4CAF50;text-decoration:none;margin:0 8px}
+.note{font-size:12px;color:#999;text-align:center;margin-top:10px}
+@media(max-width:600px){h1{font-size:22px}.tab{padding:8px 12px;font-size:13px}}
+</style>
+</head>
+<body>
+<div class="topbar">🔁 全免费 · 无需注册 · 打开即用 · 更多工具见 <a href="index.html">口算100题工具集</a></div>
+<div class="container">
+<h1>🔢 单位换算器</h1>
+<p class="subtitle">长度 · 重量 · 面积 · 温度 · 时间 · 数据存储 —— 实时换算</p>
+
+<div class="tabs" id="tabs">
+  <div class="tab active" data-cat="length">📏 长度</div>
+  <div class="tab" data-cat="weight">⚖️ 重量</div>
+  <div class="tab" data-cat="area">📐 面积</div>
+  <div class="tab" data-cat="temp">🌡️ 温度</div>
+  <div class="tab" data-cat="time">⏱️ 时间</div>
+  <div class="tab" data-cat="data">💾 数据</div>
+</div>
+
+<div class="converter-card">
+  <div class="row">
+    <div class="field">
+      <label>输入数值</label>
+      <input type="number" id="fromVal" value="1" step="any">
+    </div>
+    <div class="field">
+      <label>从</label>
+      <select id="fromUnit"></select>
+    </div>
+    <button class="swap" id="swapBtn" title="交换">⇄</button>
+    <div class="field">
+      <label>到</label>
+      <select id="toUnit"></select>
+    </div>
+  </div>
+  <div class="result" id="result">—</div>
+  <div class="note" id="formula"></div>
+  <div class="quick" id="quick"></div>
+</div>
+
+<div class="footer">
+  <a href="index.html">🏠 首页</a>
+  <a href="math-practice.html">✏️ 口算练习</a>
+  <a href="chinese-words.html">📖 词语</a>
+  <a href="english-words.html">🔤 英语单词</a>
+  <a href="timer.html">⏰ 倒计时</a>
+  <br><br>© 2026 edu-tools-kit · 永久免费
+</div>
+</div>
+
+<script>
+// 每类单位：以 [基准单位]=1 定义相对值。温度单独处理。
+const UNITS = {
+  length: {name:'长度', base:'m', items:{
+    mm:0.001, cm:0.01, dm:0.1, m:1, km:1000,
+    '英寸(in)':0.0254, '英尺(ft)':0.3048, '码(yd)':0.9144, '英里(mi)':1609.344,
+    '里':500, '丈':3.3333, '尺':0.3333, '寸':0.03333,
+    '海里(nmi)':1852
+  }},
+  weight: {name:'重量', base:'kg', items:{
+    mg:0.000001, g:0.001, kg:1, t:1000,
+    '克拉(ct)':0.0002, '两':0.05, '斤':0.5,
+    '盎司(oz)':0.0283495, '磅(lb)':0.453592, '英吨(t-uk)':1016.047
+  }},
+  area: {name:'面积', base:'m²', items:{
+    'mm²':0.000001,'cm²':0.0001,'dm²':0.01,'m²':1,'km²':1000000,
+    '公顷(ha)':10000,'亩':666.6667,'英亩(acre)':4046.86,
+    '平方英尺(ft²)':0.092903,'平方英寸(in²)':0.00064516
+  }},
+  time: {name:'时间', base:'s', items:{
+    '毫秒(ms)':0.001,'秒(s)':1,'分(min)':60,'时(h)':3600,'天(d)':86400,
+    '周(wk)':604800,'月(30d)':2592000,'年(yr)':31536000
+  }},
+  data: {name:'数据存储', base:'B', items:{
+    'bit':0.125,'B(字节)':1,'KB':1024,'MB':1048576,'GB':1073741824,
+    'TB':1099511627776,'PB':1125899906842624
+  }}
+};
+
+// 温度单独函数
+const TEMP = ['摄氏(°C)','华氏(°F)','开尔文(K)'];
+
+let currentCat = 'length';
+
+function toBase(cat, val, unit){
+  if(cat==='temp') return null;
+  return val * UNITS[cat].items[unit];
+}
+function fromBase(cat, baseVal, unit){
+  if(cat==='temp') return null;
+  return baseVal / UNITS[cat].items[unit];
+}
+function convertTemp(val, from, to){
+  let c;
+  if(from==='摄氏(°C)') c=val;
+  else if(from==='华氏(°F)') c=(val-32)*5/9;
+  else c=val-273.15;
+  if(to==='摄氏(°C)') return c;
+  if(to==='华氏(°F)') return c*9/5+32;
+  return c+273.15;
+}
+
+function fillUnits(){
+  const fromSel=document.getElementById('fromUnit');
+  const toSel=document.getElementById('toUnit');
+  fromSel.innerHTML='';toSel.innerHTML='';
+  let keys;
+  if(currentCat==='temp'){
+    keys=TEMP;
+  } else {
+    keys=Object.keys(UNITS[currentCat].items);
+  }
+  keys.forEach(k=>{
+    fromSel.appendChild(new Option(k,k));
+    toSel.appendChild(new Option(k,k));
+  });
+  if(keys.length>1){ toSel.selectedIndex=1; }
+}
+
+function doConvert(){
+  const v=parseFloat(document.getElementById('fromVal').value);
+  const f=document.getElementById('fromUnit').value;
+  const t=document.getElementById('toUnit').value;
+  if(isNaN(v)){ document.getElementById('result').textContent='请输入数字'; return; }
+  let out;
+  if(currentCat==='temp'){
+    out=convertTemp(v,f,t);
+    document.getElementById('formula').textContent=`换算：${v} ${f} = ${out.toFixed(2).replace(/\.?0+$/,'')} ${t}`;
+  } else {
+    const base=toBase(currentCat,v,f);
+    out=fromBase(currentCat,base,t);
+    document.getElementById('formula').textContent=`1 ${f} = ${(UNITS[currentCat].items[f]/UNITS[currentCat].items[t]).toPrecision(6)} ${t}`;
+  }
+  let display=Math.abs(out)>=1e9||Math.abs(out)<1e-4? out.toExponential(4): parseFloat(out.toPrecision(8));
+  document.getElementById('result').innerHTML=`<b>${display}</b> ${t}`;
+  renderQuick(v,f);
+}
+
+function renderQuick(v,from){
+  const qc=document.getElementById('quick');qc.innerHTML='';
+  if(currentCat==='temp'){ qc.style.display='none';return;}
+  qc.style.display='flex';
+  const items=UNITS[currentCat].items;
+  const base=toBase(currentCat,v,from);
+  Object.keys(items).forEach(u=>{
+    const r=fromBase(currentCat,base,u);
+    const d=Math.abs(r)>=1e9||Math.abs(r)<1e-4? r.toExponential(3):parseFloat(r.toPrecision(6));
+    const span=document.createElement('span');
+    span.textContent=`${d} ${u}`;
+    qc.appendChild(span);
+  });
+}
+
+document.querySelectorAll('.tab').forEach(tab=>{
+  tab.onclick=()=>{
+    document.querySelectorAll('.tab').forEach(t=>t.classList.remove('active'));
+    tab.classList.add('active');
+    currentCat=tab.dataset.cat;
+    fillUnits();doConvert();
+  };
+});
+document.getElementById('swapBtn').onclick=()=>{
+  const f=document.getElementById('fromUnit'),t=document.getElementById('toUnit');
+  const fi=f.selectedIndex,ti=t.selectedIndex;
+  f.selectedIndex=ti;t.selectedIndex=fi;doConvert();
+};
+document.getElementById('fromVal').oninput=doConvert;
+document.getElementById('fromUnit').onchange=doConvert;
+document.getElementById('toUnit').onchange=doConvert;
+
+fillUnits();doConvert();
+</script>
+</body>
+</html>
